@@ -1,0 +1,6 @@
+import {
+  "mizchi/svg",
+}
+
+import "wbtest" {
+}

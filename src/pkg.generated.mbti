@@ -1,0 +1,91 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/font"
+
+import {
+  "mizchi/svg",
+}
+
+// Values
+pub fn parse_cmap(BinaryReader, Int) -> Map[Int, Int]
+
+pub fn parse_head(BinaryReader, Int) -> (Int, Int)
+
+pub fn parse_hhea(BinaryReader, Int) -> (Int, Int, Int, Int)
+
+pub fn parse_hmtx(BinaryReader, Int, Int, Int) -> (Array[Int], Array[Int])
+
+pub fn parse_loca(BinaryReader, Int, Int, Int) -> Array[Int]
+
+pub fn parse_maxp(BinaryReader, Int) -> Int
+
+pub fn parse_ttf(Bytes) -> TTFont?
+
+pub fn scale_commands(Array[@svg.PathCommand], Double, Bool) -> Array[@svg.PathCommand]
+
+// Errors
+
+// Types and methods
+pub(all) struct BinaryReader {
+  data : Bytes
+  mut pos : Int
+}
+pub fn BinaryReader::at(Bytes, Int) -> Self
+pub fn BinaryReader::new(Bytes) -> Self
+pub fn BinaryReader::peek_int16_at(Self, Int) -> Int
+pub fn BinaryReader::peek_uint16_at(Self, Int) -> Int
+pub fn BinaryReader::peek_uint32_at(Self, Int) -> Int
+pub fn BinaryReader::position(Self) -> Int
+pub fn BinaryReader::read_int16(Self) -> Int
+pub fn BinaryReader::read_int8(Self) -> Int
+pub fn BinaryReader::read_tag(Self) -> String
+pub fn BinaryReader::read_uint16(Self) -> Int
+pub fn BinaryReader::read_uint32(Self) -> Int
+pub fn BinaryReader::read_uint8(Self) -> Int
+pub fn BinaryReader::seek(Self, Int) -> Unit
+pub fn BinaryReader::skip(Self, Int) -> Unit
+
+pub(all) struct Glyph {
+  glyph_id : Int
+  metrics : GlyphMetrics
+  outline : Array[@svg.PathCommand]
+}
+
+pub(all) struct GlyphBBox {
+  x_min : Int
+  y_min : Int
+  x_max : Int
+  y_max : Int
+}
+
+pub(all) struct GlyphMetrics {
+  advance_width : Int
+  left_side_bearing : Int
+  bbox : GlyphBBox
+}
+
+pub(all) struct TTFont {
+  units_per_em : Int
+  index_to_loc_format : Int
+  num_glyphs : Int
+  ascent : Int
+  descent : Int
+  line_gap : Int
+  num_h_metrics : Int
+  glyf_offset : Int
+  data : Bytes
+  cmap : Map[Int, Int]
+  loca : Array[Int]
+  advance_widths : Array[Int]
+  left_side_bearings : Array[Int]
+}
+pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]
+pub fn TTFont::get_glyph(Self, Int) -> Glyph
+pub fn TTFont::glyph_index(Self, Int) -> Int
+pub fn TTFont::glyph_metrics(Self, Int) -> GlyphMetrics
+pub fn TTFont::glyph_outline(Self, Int) -> Array[@svg.PathCommand]
+pub fn TTFont::scaled_outline(Self, Int, Double) -> Array[@svg.PathCommand]
+
+// Type aliases
+
+// Traits
+
