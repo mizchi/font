@@ -66,9 +66,9 @@ fn parse_cmap_format4(
     let start = start_codes[seg]
     let end = end_codes[seg]
     if start == 0xFFFF {
-      continue seg
-    }
-    for cp = start; cp <= end; cp = cp + 1 {
+      // skip sentinel segment (avoid `continue seg` - MoonBit JS codegen bug)
+    } else {
+      for cp = start; cp <= end; cp = cp + 1 {
       let glyph_id = if id_range_offsets[seg] == 0 {
         (cp + id_deltas[seg]) % 65536
       } else {
@@ -85,6 +85,7 @@ fn parse_cmap_format4(
       }
       if glyph_id != 0 {
         result[cp] = glyph_id
+      }
       }
     }
   }
