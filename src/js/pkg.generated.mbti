@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/font/js"
+
+// Values
+pub fn getFontInfo() -> String
+
+pub fn glyphAdvance(Int, Double) -> Double
+
+pub fn glyphToSvgPath(Int, Double) -> String
+
+pub fn loadFont(Bytes) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+

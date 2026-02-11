@@ -65,7 +65,9 @@ pub fn glyphAdvance(codepoint : Int, font_size : Double) -> Double {
     Some(font) => {
       let gid = font.glyph_index(codepoint)
       let metrics = font.glyph_metrics(gid)
-      metrics.advance_width.to_double() * font_size / font.units_per_em.to_double()
+      metrics.advance_width.to_double() *
+      font_size /
+      font.units_per_em.to_double()
     }
     None => 0.0
   }
