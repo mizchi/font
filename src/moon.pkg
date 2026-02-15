@@ -2,5 +2,5 @@ import {
   "mizchi/svg",
 }
 
-import "wbtest" {
-}
+import {
+} for "wbtest"

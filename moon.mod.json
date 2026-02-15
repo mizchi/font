@@ -1,16 +1,16 @@
 {
   "name": "mizchi/font",
-  "version": "0.1.0",
-  "description": "TrueType font parser",
+  "version": "0.1.2",
   "deps": {
-    "mizchi/svg": "0.1.1"
+    "mizchi/svg": "0.1.8"
   },
-  "source": "src",
   "readme": "README.md",
   "repository": "https://github.com/mizchi/font",
   "license": "Apache-2.0",
   "keywords": [
     "font",
     "ttf"
-  ]
+  ],
+  "description": "TrueType font parser",
+  "source": "src"
 }

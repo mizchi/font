@@ -176,7 +176,6 @@ fn parse_compound_glyph(
       } else {
         let _p1 = reader.read_uint16()
         let _p2 = reader.read_uint16()
-
       }
     } else if args_are_xy {
       dx = reader.read_int8().to_double()
@@ -184,7 +183,6 @@ fn parse_compound_glyph(
     } else {
       let _p1 = reader.read_uint8()
       let _p2 = reader.read_uint8()
-
     }
     let mut sx = 1.0
     let mut sy = 1.0

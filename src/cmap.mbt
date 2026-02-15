@@ -69,23 +69,23 @@ fn parse_cmap_format4(
       // skip sentinel segment (avoid `continue seg` - MoonBit JS codegen bug)
     } else {
       for cp = start; cp <= end; cp = cp + 1 {
-      let glyph_id = if id_range_offsets[seg] == 0 {
-        (cp + id_deltas[seg]) % 65536
-      } else {
-        let range_offset_addr = id_range_offset_base + seg * 2
-        let glyph_data_offset = range_offset_addr +
-          id_range_offsets[seg] +
-          (cp - start) * 2
-        let gid = reader.peek_uint16_at(glyph_data_offset)
-        if gid != 0 {
-          (gid + id_deltas[seg]) % 65536
+        let glyph_id = if id_range_offsets[seg] == 0 {
+          (cp + id_deltas[seg]) % 65536
         } else {
-          0
+          let range_offset_addr = id_range_offset_base + seg * 2
+          let glyph_data_offset = range_offset_addr +
+            id_range_offsets[seg] +
+            (cp - start) * 2
+          let gid = reader.peek_uint16_at(glyph_data_offset)
+          if gid != 0 {
+            (gid + id_deltas[seg]) % 65536
+          } else {
+            0
+          }
         }
-      }
-      if glyph_id != 0 {
-        result[cp] = glyph_id
-      }
+        if glyph_id != 0 {
+          result[cp] = glyph_id
+        }
       }
     }
   }
