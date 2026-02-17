@@ -1,6 +1,7 @@
 import {
   "mizchi/svg",
   "mizchi/zlib",
+  "mizchi/font/brotli",
 }
 
 import {
