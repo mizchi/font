@@ -5,7 +5,7 @@ let global_font : Ref[@font.TTFont?] = { val: None }
 ///|
 /// Load font from bytes and return info JSON, or empty string on failure
 pub fn loadFont(data : Bytes) -> String {
-  match @font.parse_ttf(data) {
+  match @font.parse_font(data) {
     Some(font) => {
       global_font.val = Some(font)
       let buf = StringBuilder::new()
