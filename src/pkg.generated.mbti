@@ -24,6 +24,8 @@ pub fn parse_ttf(Bytes) -> TTFont?
 
 pub fn parse_woff1(Bytes) -> TTFont?
 
+pub fn parse_woff2(Bytes) -> TTFont?
+
 pub fn scale_commands(Array[@svg.PathCommand], Double, Bool) -> Array[@svg.PathCommand]
 
 // Errors

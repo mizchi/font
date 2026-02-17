@@ -79,7 +79,7 @@ fn read_symbol(
   let nbits = table[idx].bits - huffman_table_bits
   if nbits > 0 {
     br.bit_pos += huffman_table_bits
-    idx = index + table[idx].value
+    idx += table[idx].value
     idx += ushr(br.val, br.bit_pos) & ((1 << nbits) - 1)
   }
   br.bit_pos += table[idx].bits
@@ -381,7 +381,8 @@ fn decode_context_map(
       context_map[i] = 0
       i += 1
     } else if code <= max_run_length_prefix {
-      let mut reps = 1 + (1 << code) + br.read_bits(code)
+      let extra = br.read_bits(code)
+      let mut reps = 1 + (1 << code) + extra
       reps -= 1
       while reps > 0 {
         if i >= context_map_size {
@@ -710,7 +711,7 @@ fn brotli_decompress_internal(br : BitReader) -> Bytes raise BrotliError {
           context_lookup_offset2 = context_lookup_offsets[context_mode + 1]
         }
         let context = context_lookup[context_lookup_offset1 + prev_byte1] |
-        context_lookup[context_lookup_offset2 + prev_byte2]
+          context_lookup[context_lookup_offset2 + prev_byte2]
         let literal_htree_index = context_map[context_map_slice + context]
         block_length[0] -= 1
         prev_byte2 = prev_byte1

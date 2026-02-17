@@ -10,8 +10,11 @@ pub fn parse_font(data : Bytes) -> TTFont? {
     (data[2].to_int() << 8) |
     data[3].to_int()
   if magic == 0x774F4646 {
-    // wOFF
+    // wOFF (WOFF1)
     parse_woff1(data)
+  } else if magic == 0x774F4632 {
+    // wOF2 (WOFF2)
+    parse_woff2(data)
   } else {
     // 0x00010000 (TrueType), 0x4F54544F (OTTO/CFF), 0x74727565 (true)
     parse_ttf(data)
