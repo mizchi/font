@@ -8,6 +8,8 @@ import {
 // Values
 pub fn parse_cmap(BinaryReader, Int) -> Map[Int, Int]
 
+pub fn parse_font(Bytes) -> TTFont?
+
 pub fn parse_head(BinaryReader, Int) -> (Int, Int)
 
 pub fn parse_hhea(BinaryReader, Int) -> (Int, Int, Int, Int)
@@ -19,6 +21,8 @@ pub fn parse_loca(BinaryReader, Int, Int, Int) -> Array[Int]
 pub fn parse_maxp(BinaryReader, Int) -> Int
 
 pub fn parse_ttf(Bytes) -> TTFont?
+
+pub fn parse_woff1(Bytes) -> TTFont?
 
 pub fn scale_commands(Array[@svg.PathCommand], Double, Bool) -> Array[@svg.PathCommand]
 
