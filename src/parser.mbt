@@ -1,4 +1,24 @@
 ///|
+/// Parse a font from raw bytes, auto-detecting format (TTF, OTF, or WOFF1)
+pub fn parse_font(data : Bytes) -> TTFont? {
+  // Minimum header: sfnt = 12 bytes, WOFF1 = 44 bytes
+  if data.length() < 12 {
+    return None
+  }
+  let magic = (data[0].to_int() << 24) |
+    (data[1].to_int() << 16) |
+    (data[2].to_int() << 8) |
+    data[3].to_int()
+  if magic == 0x774F4646 {
+    // wOFF
+    parse_woff1(data)
+  } else {
+    // 0x00010000 (TrueType), 0x4F54544F (OTTO/CFF), 0x74727565 (true)
+    parse_ttf(data)
+  }
+}
+
+///|
 /// Parse a TrueType font from raw bytes
 pub fn parse_ttf(data : Bytes) -> TTFont? {
   let reader = BinaryReader::new(data)
