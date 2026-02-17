@@ -1,5 +1,6 @@
 _build/
 target/
 node_modules/
+.mooncakes/
 debug-output.svg
 debug-weight-comparison.svg
