@@ -2,3 +2,4 @@ _build/
 target/
 node_modules/
 debug-output.svg
+debug-weight-comparison.svg
