@@ -35,6 +35,22 @@ pub(all) struct TTFont {
   loca : Array[Int]
   advance_widths : Array[Int]
   left_side_bearings : Array[Int]
+  cff : CFFData?
+}
+
+///|
+pub(all) struct CFFIndex {
+  data_offset : Int
+  offsets : Array[Int]
+}
+
+///|
+pub(all) struct CFFData {
+  charstrings : CFFIndex
+  global_subrs : CFFIndex
+  local_subrs : CFFIndex
+  default_width_x : Int
+  nominal_width_x : Int
 }
 
 ///|

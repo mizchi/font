@@ -22,7 +22,7 @@ pub fn parse_font(data : Bytes) -> TTFont? {
 }
 
 ///|
-/// Parse a TrueType font from raw bytes
+/// Parse a TrueType/OpenType font from raw bytes
 pub fn parse_ttf(data : Bytes) -> TTFont? {
   let reader = BinaryReader::new(data)
   let _sfnt_version = reader.read_uint32()
@@ -43,20 +43,14 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
   guard tables.get("maxp") is Some(maxp_rec) else { return None }
   guard tables.get("hhea") is Some(hhea_rec) else { return None }
   guard tables.get("hmtx") is Some(hmtx_rec) else { return None }
-  guard tables.get("loca") is Some(loca_rec) else { return None }
   guard tables.get("cmap") is Some(cmap_rec) else { return None }
-  guard tables.get("glyf") is Some(glyf_rec) else { return None }
+  let has_glyf = tables.get("glyf") is Some(_)
+  let has_cff = tables.get("CFF ") is Some(_)
   let (units_per_em, index_to_loc_format) = parse_head(reader, head_rec.offset)
   let num_glyphs = parse_maxp(reader, maxp_rec.offset)
   let (ascent, descent, line_gap, num_h_metrics) = parse_hhea(
     reader,
     hhea_rec.offset,
-  )
-  let loca = parse_loca(
-    reader,
-    loca_rec.offset,
-    num_glyphs,
-    index_to_loc_format,
   )
   let (advance_widths, left_side_bearings) = parse_hmtx(
     reader,
@@ -65,21 +59,57 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
     num_h_metrics,
   )
   let cmap = parse_cmap(reader, cmap_rec.offset)
-  Some({
-    units_per_em,
-    index_to_loc_format,
-    num_glyphs,
-    ascent,
-    descent,
-    line_gap,
-    num_h_metrics,
-    glyf_offset: glyf_rec.offset,
-    data,
-    cmap,
-    loca,
-    advance_widths,
-    left_side_bearings,
-  })
+  if has_glyf {
+    guard tables.get("loca") is Some(loca_rec) else { return None }
+    guard tables.get("glyf") is Some(glyf_rec) else { return None }
+    let loca = parse_loca(
+      reader,
+      loca_rec.offset,
+      num_glyphs,
+      index_to_loc_format,
+    )
+    Some({
+      units_per_em,
+      index_to_loc_format,
+      num_glyphs,
+      ascent,
+      descent,
+      line_gap,
+      num_h_metrics,
+      glyf_offset: glyf_rec.offset,
+      data,
+      cmap,
+      loca,
+      advance_widths,
+      left_side_bearings,
+      cff: None,
+    })
+  } else if has_cff {
+    guard tables.get("CFF ") is Some(cff_rec) else { return None }
+    let cff_data = parse_cff_table(data, cff_rec.offset)
+    match cff_data {
+      Some(cff) =>
+        Some({
+          units_per_em,
+          index_to_loc_format,
+          num_glyphs,
+          ascent,
+          descent,
+          line_gap,
+          num_h_metrics,
+          glyf_offset: 0,
+          data,
+          cmap,
+          loca: [],
+          advance_widths,
+          left_side_bearings,
+          cff: Some(cff),
+        })
+      None => None
+    }
+  } else {
+    None
+  }
 }
 
 ///|
@@ -119,7 +149,10 @@ pub fn TTFont::glyph_metrics(self : TTFont, glyph_id : Int) -> GlyphMetrics {
   } else {
     0
   }
-  let bbox = if glyph_id < self.num_glyphs && glyph_id < self.loca.length() - 1 {
+  let bbox : GlyphBBox = if self.cff is Some(_) {
+    // CFF fonts: no glyf bbox available, return zero
+    { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+  } else if glyph_id < self.num_glyphs && glyph_id < self.loca.length() - 1 {
     let glyf_off = self.loca[glyph_id]
     let next_off = self.loca[glyph_id + 1]
     if glyf_off != next_off {
