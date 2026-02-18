@@ -203,6 +203,7 @@ priv struct CSState {
   mut num_stems : Int
   mut first_move : Bool
   mut ended : Bool
+  storage : FixedArray[Double] // put/get storage (32 slots, CFF spec)
 }
 
 ///|
@@ -224,6 +225,7 @@ fn cff_glyph_outline(
     num_stems: 0,
     first_move: true,
     ended: false,
+    storage: FixedArray::make(32, 0.0),
   }
   interpret_charstring(
     data, cs_offset, cs_length, cff, commands, stack, state, 0,
@@ -588,6 +590,137 @@ fn exec_operator_12(
   state : CSState,
 ) -> Unit {
   match b1 {
+    3 => {
+      // and
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(if a != 0.0 && b != 0.0 { 1.0 } else { 0.0 })
+    }
+    4 => {
+      // or
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(if a != 0.0 || b != 0.0 { 1.0 } else { 0.0 })
+    }
+    5 => {
+      // not
+      let a = stack.unsafe_pop()
+      stack.push(if a == 0.0 { 1.0 } else { 0.0 })
+    }
+    9 => {
+      // abs
+      let a = stack.unsafe_pop()
+      stack.push(a.abs())
+    }
+    10 => {
+      // add
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(a + b)
+    }
+    11 => {
+      // sub
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(a - b)
+    }
+    12 => {
+      // div
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(a / b)
+    }
+    14 => {
+      // neg
+      let a = stack.unsafe_pop()
+      stack.push(-a)
+    }
+    15 => {
+      // eq
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(if a == b { 1.0 } else { 0.0 })
+    }
+    18 => {
+      // drop
+      let _ = stack.unsafe_pop()
+    }
+    20 => {
+      // put
+      let i = stack.unsafe_pop().to_int()
+      let val = stack.unsafe_pop()
+      if i >= 0 && i < state.storage.length() {
+        state.storage[i] = val
+      }
+    }
+    21 => {
+      // get
+      let i = stack.unsafe_pop().to_int()
+      if i >= 0 && i < state.storage.length() {
+        stack.push(state.storage[i])
+      } else {
+        stack.push(0.0)
+      }
+    }
+    22 => {
+      // ifelse: s1 s2 v1 v2 -> (v1 <= v2 ? s1 : s2)
+      let v2 = stack.unsafe_pop()
+      let v1 = stack.unsafe_pop()
+      let s2 = stack.unsafe_pop()
+      let s1 = stack.unsafe_pop()
+      stack.push(if v1 <= v2 { s1 } else { s2 })
+    }
+    23 =>
+      // random - deterministic: always push 1.0
+      stack.push(1.0)
+    24 => {
+      // mul
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(a * b)
+    }
+    26 => {
+      // sqrt
+      let a = stack.unsafe_pop()
+      stack.push(a.sqrt())
+    }
+    27 => {
+      // dup
+      let a = stack.unsafe_pop()
+      stack.push(a)
+      stack.push(a)
+    }
+    28 => {
+      // exch
+      let b = stack.unsafe_pop()
+      let a = stack.unsafe_pop()
+      stack.push(b)
+      stack.push(a)
+    }
+    29 => {
+      // index
+      let i = stack.unsafe_pop().to_int()
+      let idx = if i < 0 { 0 } else { i }
+      if idx < stack.length() {
+        stack.push(stack[stack.length() - 1 - idx])
+      }
+    }
+    30 => {
+      // roll: n j roll - rotate top n elements by j positions
+      let j = stack.unsafe_pop().to_int()
+      let n = stack.unsafe_pop().to_int()
+      if n > 0 && n <= stack.length() {
+        let base = stack.length() - n
+        let temp : Array[Double] = []
+        for i = 0; i < n; i = i + 1 {
+          temp.push(stack[base + i])
+        }
+        let shift = (j % n + n) % n
+        for i = 0; i < n; i = i + 1 {
+          stack[base + i] = temp[(i + n - shift) % n]
+        }
+      }
+    }
     34 => {
       // hflex
       if stack.length() >= 7 {
