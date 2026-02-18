@@ -390,6 +390,104 @@ fn glyf_outline_by_id_var_gvar(
 }
 
 ///|
+/// Interpolate glyph metrics for glyf+gvar variable fonts using phantom points.
+/// Phantom points are appended after the real glyph points:
+///   phantom[0] = (0, 0)           — origin
+///   phantom[1] = (advance, 0)     — advance width
+///   phantom[2] = (lsb, 0)         — left side bearing
+///   phantom[3] = (0, 0)           — reserved
+/// Returns (interpolated_advance, interpolated_lsb, bbox).
+fn gvar_interpolate_metrics(
+  font : TTFont,
+  gvar : GvarData,
+  glyph_id : Int,
+  coords : Array[Double],
+  advance : Int,
+  lsb : Int,
+) -> (Int, Int, GlyphBBox) {
+  let default_bbox : GlyphBBox = { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+  if glyph_id >= font.loca.length() - 1 {
+    return (advance, lsb, default_bbox)
+  }
+  let glyf_off = font.loca[glyph_id]
+  let next_off = font.loca[glyph_id + 1]
+  if glyf_off == next_off {
+    // Empty glyph — still apply phantom point deltas
+    let x_coords : Array[Int] = [0, advance, lsb, 0]
+    let y_coords : Array[Int] = [0, 0, 0, 0]
+    let end_points : Array[Int] = []
+    let (dx, _dy) = apply_gvar_deltas(
+      font.data,
+      gvar,
+      glyph_id,
+      coords,
+      x_coords,
+      y_coords,
+      end_points,
+    )
+    let var_advance = if dx.length() > 1 { advance + dx[1] } else { advance }
+    let var_lsb = if dx.length() > 2 { lsb + dx[2] } else { lsb }
+    return (var_advance, var_lsb, default_bbox)
+  }
+  let offset = font.glyf_offset + glyf_off
+  let reader = BinaryReader::at(font.data, offset)
+  let num_contours = reader.read_int16()
+  let x_min = reader.read_int16()
+  let y_min = reader.read_int16()
+  let x_max = reader.read_int16()
+  let y_max = reader.read_int16()
+  if num_contours < 0 {
+    // Compound glyph — return static metrics with table bbox
+    return (advance, lsb, { x_min, y_min, x_max, y_max })
+  }
+  let (x_coords, y_coords, flags, end_points) = parse_glyph_points(
+    reader, num_contours,
+  )
+  // Append 4 phantom points
+  let x_with_phantom = x_coords.copy()
+  let y_with_phantom = y_coords.copy()
+  x_with_phantom.push(0) // phantom 0: origin x
+  y_with_phantom.push(0) // phantom 0: origin y
+  x_with_phantom.push(advance) // phantom 1: advance x
+  y_with_phantom.push(0) // phantom 1: advance y
+  x_with_phantom.push(lsb) // phantom 2: lsb x
+  y_with_phantom.push(0) // phantom 2: lsb y
+  x_with_phantom.push(0) // phantom 3: reserved
+  y_with_phantom.push(0) // phantom 3: reserved
+  let (dx, dy) = apply_gvar_deltas(
+    font.data,
+    gvar,
+    glyph_id,
+    coords,
+    x_with_phantom,
+    y_with_phantom,
+    end_points,
+  )
+  let num_real = x_coords.length()
+  let var_advance = if dx.length() > num_real + 1 {
+    advance + dx[num_real + 1]
+  } else {
+    advance
+  }
+  let var_lsb = if dx.length() > num_real + 2 {
+    lsb + dx[num_real + 2]
+  } else {
+    lsb
+  }
+  // Compute variable bbox from interpolated outline
+  let var_x : Array[Int] = []
+  let var_y : Array[Int] = []
+  for i = 0; i < num_real; i = i + 1 {
+    var_x.push(x_coords[i] + dx[i])
+    var_y.push(y_coords[i] + dy[i])
+  }
+  let contours = assemble_contours(var_x, var_y, flags, end_points)
+  let outline = contours_to_path_commands(contours)
+  let bbox = compute_path_bbox(outline)
+  (var_advance, var_lsb, bbox)
+}
+
+///|
 fn glyf_outline_by_id(font : TTFont, glyph_id : Int) -> Array[@svg.PathCommand] {
   let glyf_offset = font.loca[glyph_id]
   let next_offset = font.loca[glyph_id + 1]

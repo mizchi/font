@@ -222,9 +222,11 @@ pub fn TTFont::glyph_metrics(self : TTFont, glyph_id : Int) -> GlyphMetrics {
     0
   }
   let bbox : GlyphBBox = match self.cff {
-    Some(_) =>
-      // CFF fonts: no glyf bbox available, return zero
-      { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+    Some(_) => {
+      // CFF fonts: compute bbox from outline
+      let outline = self.glyph_outline(glyph_id)
+      compute_path_bbox(outline)
+    }
     None =>
       if glyph_id < self.num_glyphs && glyph_id < self.loca.length() - 1 {
         let glyf_off = self.loca[glyph_id]
@@ -254,6 +256,59 @@ pub fn TTFont::get_glyph(self : TTFont, codepoint : Int) -> Glyph {
   let metrics = self.glyph_metrics(gid)
   let outline = self.glyph_outline(gid)
   { glyph_id: gid, metrics, outline }
+}
+
+///|
+/// Get glyph metrics with variable font interpolation.
+/// For glyf+gvar fonts, advance width is interpolated via phantom points.
+/// For CFF2 fonts, bbox is computed from the variable outline (advance uses static value).
+pub fn TTFont::glyph_metrics_at(
+  self : TTFont,
+  glyph_id : Int,
+  axis_values : Map[String, Double],
+) -> GlyphMetrics {
+  if self.var_axes.is_empty() {
+    return self.glyph_metrics(glyph_id)
+  }
+  // Normalize coordinates with avar mapping
+  let coords : Array[Double] = []
+  for i, axis in self.var_axes {
+    let user_val = axis_values.get(axis.tag).unwrap_or(axis.default_value)
+    let mut coord = normalize_axis_coord(user_val, axis)
+    if i < self.avar_segments.length() {
+      coord = apply_avar(coord, self.avar_segments[i])
+    }
+    coords.push(coord)
+  }
+  let advance = if glyph_id < self.advance_widths.length() {
+    self.advance_widths[glyph_id]
+  } else {
+    0
+  }
+  let lsb = if glyph_id < self.left_side_bearings.length() {
+    self.left_side_bearings[glyph_id]
+  } else {
+    0
+  }
+  // glyf+gvar: interpolate metrics via phantom points
+  if self.gvar is Some(gvar) && self.cff is None {
+    let (var_advance, var_lsb, var_bbox) = gvar_interpolate_metrics(
+      self, gvar, glyph_id, coords, advance, lsb,
+    )
+    return {
+      advance_width: var_advance,
+      left_side_bearing: var_lsb,
+      bbox: var_bbox,
+    }
+  }
+  // CFF2: compute bbox from variable outline, advance stays static
+  if self.cff is Some(cff) && cff.ivs is Some(ivs) {
+    let scalars = precompute_scalars(ivs, 0, coords)
+    let outline = glyph_outline_by_id_var(self, glyph_id, scalars)
+    let bbox = compute_path_bbox(outline)
+    return { advance_width: advance, left_side_bearing: lsb, bbox }
+  }
+  self.glyph_metrics(glyph_id)
 }
 
 ///|

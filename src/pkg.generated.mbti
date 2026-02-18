@@ -12,6 +12,8 @@ pub fn bytes_slice(Bytes, Int, Int) -> Bytes
 
 pub fn calc_table_checksum(Bytes) -> Int
 
+pub fn compute_path_bbox(Array[@svg.PathCommand]) -> GlyphBBox
+
 pub fn log2_floor(Int) -> Int
 
 pub fn pad4(Int) -> Int
@@ -205,6 +207,7 @@ pub fn TTFont::font_name(Self, Int) -> String?
 pub fn TTFont::get_glyph(Self, Int) -> Glyph
 pub fn TTFont::glyph_index(Self, Int) -> Int
 pub fn TTFont::glyph_metrics(Self, Int) -> GlyphMetrics
+pub fn TTFont::glyph_metrics_at(Self, Int, Map[String, Double]) -> GlyphMetrics
 pub fn TTFont::glyph_name(Self, Int) -> String
 pub fn TTFont::glyph_outline(Self, Int) -> Array[@svg.PathCommand]
 pub fn TTFont::glyph_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
