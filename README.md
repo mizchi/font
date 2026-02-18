@@ -1,12 +1,15 @@
 # mizchi/font
 
-TrueType font parser written in [MoonBit](https://www.moonbitlang.com/).
+TrueType/WOFF/WOFF2 font parser written in [MoonBit](https://www.moonbitlang.com/).
 
-Parses TTF binary data and converts glyph outlines to `@svg.PathCommand` (from [mizchi/svg](https://github.com/mizchi/svg)).
+Parses TTF/WOFF/WOFF2 binary data and converts glyph outlines to `@svg.PathCommand` (from [mizchi/svg](https://github.com/mizchi/svg)).
 
 ## Features
 
+- Auto-detection of TTF, WOFF, and WOFF2 formats
 - TTF table parsing: `head`, `maxp`, `hhea`, `hmtx`, `loca`, `cmap`, `glyf`
+- WOFF1 decompression (zlib)
+- WOFF2 decompression (Brotli) with glyf/loca table reconstruction
 - cmap Format 4 (Unicode BMP mapping)
 - Simple and compound glyph outlines
 - Quadratic bezier to SVG path command conversion
@@ -15,7 +18,7 @@ Parses TTF binary data and converts glyph outlines to `@svg.PathCommand` (from [
 ## Usage
 
 ```moonbit
-let data : Bytes = ... // TTF file bytes
+let data : Bytes = ... // TTF, WOFF, or WOFF2 file bytes
 let font = @font.parse_ttf(data).unwrap()
 
 // Get glyph outline as SVG path commands
@@ -29,6 +32,8 @@ let metrics = font.glyph_metrics(gid)
 ## Dependencies
 
 - [mizchi/svg](https://github.com/mizchi/svg) - `PathCommand` type
+- [mizchi/zlib](https://github.com/mizchi/zlib) - WOFF1 decompression
+- [mizchi/brotli](https://github.com/mizchi/brotli) - WOFF2 decompression
 
 ## Test fonts
 
