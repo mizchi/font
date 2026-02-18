@@ -10,6 +10,8 @@ pub fn parse_cmap(BinaryReader, Int) -> Map[Int, Int]
 
 pub fn parse_font(Bytes) -> TTFont?
 
+pub fn parse_fvar(BinaryReader, Int) -> Array[VarAxis]
+
 pub fn parse_head(BinaryReader, Int) -> (Int, Int)
 
 pub fn parse_hhea(BinaryReader, Int) -> (Int, Int, Int, Int)
@@ -41,6 +43,8 @@ pub fn BinaryReader::peek_int16_at(Self, Int) -> Int
 pub fn BinaryReader::peek_uint16_at(Self, Int) -> Int
 pub fn BinaryReader::peek_uint32_at(Self, Int) -> Int
 pub fn BinaryReader::position(Self) -> Int
+pub fn BinaryReader::read_f16dot16(Self) -> Double
+pub fn BinaryReader::read_f2dot14(Self) -> Double
 pub fn BinaryReader::read_int16(Self) -> Int
 pub fn BinaryReader::read_int8(Self) -> Int
 pub fn BinaryReader::read_tag(Self) -> String
@@ -57,6 +61,7 @@ pub(all) struct CFFData {
   default_width_x : Int
   nominal_width_x : Int
   is_cff2 : Bool
+  ivs : ItemVariationStore?
 }
 
 pub(all) struct CFFIndex {
@@ -83,6 +88,16 @@ pub(all) struct GlyphMetrics {
   bbox : GlyphBBox
 }
 
+pub(all) struct ItemVariationData {
+  region_indices : Array[Int]
+  delta_sets : Array[Array[Int]]
+}
+
+pub(all) struct ItemVariationStore {
+  regions : Array[VarRegion]
+  data : Array[ItemVariationData]
+}
+
 pub(all) struct TTFont {
   units_per_em : Int
   index_to_loc_format : Int
@@ -98,13 +113,33 @@ pub(all) struct TTFont {
   advance_widths : Array[Int]
   left_side_bearings : Array[Int]
   cff : CFFData?
+  var_axes : Array[VarAxis]
 }
 pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]
+pub fn TTFont::char_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
 pub fn TTFont::get_glyph(Self, Int) -> Glyph
 pub fn TTFont::glyph_index(Self, Int) -> Int
 pub fn TTFont::glyph_metrics(Self, Int) -> GlyphMetrics
 pub fn TTFont::glyph_outline(Self, Int) -> Array[@svg.PathCommand]
+pub fn TTFont::glyph_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
 pub fn TTFont::scaled_outline(Self, Int, Double) -> Array[@svg.PathCommand]
+
+pub(all) struct VarAxis {
+  tag : String
+  min_value : Double
+  default_value : Double
+  max_value : Double
+}
+
+pub(all) struct VarRegion {
+  axes : Array[VarRegionAxis]
+}
+
+pub(all) struct VarRegionAxis {
+  start_coord : Double
+  peak_coord : Double
+  end_coord : Double
+}
 
 // Type aliases
 

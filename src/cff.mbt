@@ -181,6 +181,7 @@ fn parse_cff_table(data : Bytes, cff_offset : Int) -> CFFData? {
     default_width_x,
     nominal_width_x,
     is_cff2: false,
+    ivs: None,
   })
 }
 
@@ -202,6 +203,145 @@ fn parse_cff2_index(reader : BinaryReader) -> CFFIndex {
   let data_size = offsets[count]
   reader.skip(data_size)
   { data_offset, offsets }
+}
+
+///|
+/// Normalize a user-space axis value to [-1, 1]
+fn normalize_axis_coord(value : Double, axis : VarAxis) -> Double {
+  if value <= axis.default_value {
+    if value <= axis.min_value {
+      return -1.0
+    }
+    if axis.default_value == axis.min_value {
+      return 0.0
+    }
+    -(axis.default_value - value) / (axis.default_value - axis.min_value)
+  } else {
+    if value >= axis.max_value {
+      return 1.0
+    }
+    if axis.max_value == axis.default_value {
+      return 0.0
+    }
+    (value - axis.default_value) / (axis.max_value - axis.default_value)
+  }
+}
+
+///|
+/// Compute the scalar for a single variation region given normalized coordinates
+fn compute_region_scalar(region : VarRegion, coords : Array[Double]) -> Double {
+  let mut scalar = 1.0
+  for i = 0; i < region.axes.length(); i = i + 1 {
+    let ra = region.axes[i]
+    let coord = if i < coords.length() { coords[i] } else { 0.0 }
+    if ra.peak_coord == 0.0 {
+      continue
+    }
+    if coord == ra.peak_coord {
+      continue
+    }
+    if coord <= ra.start_coord || coord >= ra.end_coord {
+      return 0.0
+    }
+    if coord < ra.peak_coord {
+      scalar = scalar *
+        (coord - ra.start_coord) /
+        (ra.peak_coord - ra.start_coord)
+    } else {
+      scalar = scalar * (ra.end_coord - coord) / (ra.end_coord - ra.peak_coord)
+    }
+  }
+  scalar
+}
+
+///|
+/// Precompute scalars for all regions referenced by a given vsindex
+fn precompute_scalars(
+  ivs : ItemVariationStore,
+  vsindex : Int,
+  coords : Array[Double],
+) -> Array[Double] {
+  if vsindex < 0 || vsindex >= ivs.data.length() {
+    return []
+  }
+  let ivd = ivs.data[vsindex]
+  let scalars : Array[Double] = []
+  for ri in ivd.region_indices {
+    if ri >= 0 && ri < ivs.regions.length() {
+      scalars.push(compute_region_scalar(ivs.regions[ri], coords))
+    } else {
+      scalars.push(0.0)
+    }
+  }
+  scalars
+}
+
+///|
+/// Parse an ItemVariationStore from CFF2 TopDICT op 24
+fn parse_item_variation_store(data : Bytes, offset : Int) -> ItemVariationStore {
+  let reader = BinaryReader::at(data, offset)
+  let _length = reader.read_uint16() // total length
+  let _format = reader.read_uint16() // must be 1
+  let region_list_offset = reader.read_uint32()
+  let data_count = reader.read_uint16()
+  // Read data offsets
+  let data_offsets : Array[Int] = []
+  for i = 0; i < data_count; i = i + 1 {
+    data_offsets.push(reader.read_uint32())
+    ignore(i)
+  }
+  // Parse VarRegionList
+  let rl_abs = offset + 2 + region_list_offset // skip length field (2 bytes)
+  let rl_reader = BinaryReader::at(data, rl_abs)
+  let axis_count = rl_reader.read_uint16()
+  let region_count = rl_reader.read_uint16()
+  let regions : Array[VarRegion] = []
+  for _r = 0; _r < region_count; _r = _r + 1 {
+    let axes : Array[VarRegionAxis] = []
+    for _a = 0; _a < axis_count; _a = _a + 1 {
+      let start_coord = rl_reader.read_f2dot14()
+      let peak_coord = rl_reader.read_f2dot14()
+      let end_coord = rl_reader.read_f2dot14()
+      axes.push({ start_coord, peak_coord, end_coord })
+    }
+    regions.push({ axes, })
+  }
+  // Parse ItemVariationData subtables
+  let ivd_list : Array[ItemVariationData] = []
+  for i = 0; i < data_count; i = i + 1 {
+    let ivd_abs = offset + 2 + data_offsets[i] // skip length field
+    let ivd_reader = BinaryReader::at(data, ivd_abs)
+    let item_count = ivd_reader.read_uint16()
+    let word_delta_count = ivd_reader.read_uint16()
+    let region_index_count = ivd_reader.read_uint16()
+    let long_words = (word_delta_count & 0x8000) != 0
+    let word_count = word_delta_count & 0x7FFF
+    let region_indices : Array[Int] = []
+    for _j = 0; _j < region_index_count; _j = _j + 1 {
+      region_indices.push(ivd_reader.read_uint16())
+    }
+    let delta_sets : Array[Array[Int]] = []
+    for _item = 0; _item < item_count; _item = _item + 1 {
+      let deltas : Array[Int] = []
+      for col = 0; col < region_index_count; col = col + 1 {
+        if col < word_count {
+          if long_words {
+            deltas.push(ivd_reader.read_uint32())
+          } else {
+            deltas.push(ivd_reader.read_int16())
+          }
+        } else if long_words {
+          deltas.push(ivd_reader.read_int16())
+        } else {
+          deltas.push(ivd_reader.read_int8())
+        }
+      }
+      delta_sets.push(deltas)
+    }
+    ivd_list.push({ region_indices, delta_sets })
+    ignore(i)
+  }
+  { regions, data: ivd_list }
 }
 
 ///|
@@ -263,6 +403,17 @@ fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
       }
     None => ()
   }
+  // ItemVariationStore from TopDICT op 24
+  let ivs : ItemVariationStore? = match top_dict.get(24) {
+    Some(ops) =>
+      if ops.length() > 0 {
+        let ivs_offset = cff2_offset + ops[0]
+        Some(parse_item_variation_store(data, ivs_offset))
+      } else {
+        None
+      }
+    None => None
+  }
   Some({
     charstrings,
     global_subrs,
@@ -270,6 +421,7 @@ fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
     default_width_x: 0,
     nominal_width_x: 0,
     is_cff2: true,
+    ivs,
   })
 }
 
@@ -295,6 +447,8 @@ priv struct CSState {
   mut ended : Bool
   is_cff2 : Bool
   storage : FixedArray[Double] // put/get storage (32 slots, CFF spec)
+  mut vsindex : Int
+  scalars : Array[Double]?
 }
 
 ///|
@@ -318,12 +472,48 @@ fn cff_glyph_outline(
     ended: false,
     is_cff2: cff.is_cff2,
     storage: FixedArray::make(32, 0.0),
+    vsindex: 0,
+    scalars: None,
   }
   interpret_charstring(
     data, cs_offset, cs_length, cff, commands, stack, state, 0,
   )
   // CFF2: endchar is optional; close path implicitly if not ended
   if cff.is_cff2 && not(state.ended) && not(state.first_move) {
+    commands.push(@svg.ClosePath)
+  }
+  commands
+}
+
+///|
+fn cff_glyph_outline_var(
+  data : Bytes,
+  cff : CFFData,
+  glyph_id : Int,
+  scalars : Array[Double],
+) -> Array[@svg.PathCommand] {
+  if glyph_id < 0 || glyph_id >= cff.charstrings.count() {
+    return []
+  }
+  let (cs_offset, cs_length) = cff.charstrings.entry(glyph_id)
+  let commands : Array[@svg.PathCommand] = []
+  let stack : Array[Double] = []
+  let state : CSState = {
+    x: 0.0,
+    y: 0.0,
+    has_width: false,
+    num_stems: 0,
+    first_move: true,
+    ended: false,
+    is_cff2: true,
+    storage: FixedArray::make(32, 0.0),
+    vsindex: 0,
+    scalars: Some(scalars),
+  }
+  interpret_charstring(
+    data, cs_offset, cs_length, cff, commands, stack, state, 0,
+  )
+  if not(state.ended) && not(state.first_move) {
     commands.push(@svg.ClosePath)
   }
   commands
@@ -493,14 +683,6 @@ fn exec_operator(
       let b1 = reader.read_uint8()
       exec_operator_12(b1, commands, stack, state)
     }
-    15 =>
-      // blend (CFF2): pop deltas, keep base values
-      // Stack: val1..valN d1_1..dN_k N
-      // Phase 1: no variation regions, so k=0 and nothing to pop beyond N
-      // For safety, just pop N and ignore (no deltas in default instance)
-      if stack.length() > 0 {
-        let _ = stack.unsafe_pop() // pop N
-      }
     14 => {
       // endchar
       check_width(stack, state, 0)
@@ -510,6 +692,39 @@ fn exec_operator(
       stack.clear()
       state.ended = true
     }
+    15 =>
+      // vsindex (CFF2): set variation index
+      if state.is_cff2 && stack.length() > 0 {
+        state.vsindex = stack.unsafe_pop().to_int()
+      }
+    16 =>
+      // blend (CFF2): interpolate deltas into base values
+      if state.is_cff2 && stack.length() > 0 {
+        let n = stack.unsafe_pop().to_int()
+        match state.scalars {
+          Some(scalars) => {
+            let k = scalars.length()
+            // Stack layout: val1..valN d1_1..d1_k .. dN_1..dN_k
+            let base_start = stack.length() - n * k - n
+            for i = 0; i < n; i = i + 1 {
+              let mut blended = stack[base_start + i]
+              for j = 0; j < k; j = j + 1 {
+                blended = blended +
+                  stack[base_start + n + i * k + j] * scalars[j]
+              }
+              stack[base_start + i] = blended
+            }
+            // Remove deltas, keep blended base values
+            let new_len = stack.length() - n * k
+            while stack.length() > new_len {
+              let _ = stack.unsafe_pop()
+            }
+          }
+          None =>
+            // No variation: just remove deltas (k=0, nothing to pop beyond N)
+            ()
+        }
+      }
     19 | 20 => {
       // hintmask, cntrmask
       let pair_count = stack.length() / 2 * 2

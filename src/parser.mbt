@@ -60,6 +60,10 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
     num_h_metrics,
   )
   let cmap = parse_cmap(reader, cmap_rec.offset)
+  let var_axes : Array[VarAxis] = match tables.get("fvar") {
+    Some(fvar_rec) => parse_fvar(reader, fvar_rec.offset)
+    None => []
+  }
   if has_glyf {
     guard tables.get("loca") is Some(loca_rec) else { return None }
     guard tables.get("glyf") is Some(glyf_rec) else { return None }
@@ -84,6 +88,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
       advance_widths,
       left_side_bearings,
       cff: None,
+      var_axes,
     })
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
@@ -105,6 +110,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
           advance_widths,
           left_side_bearings,
           cff: Some(cff),
+          var_axes,
         })
       None => None
     }
@@ -128,6 +134,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
           advance_widths,
           left_side_bearings,
           cff: Some(cff),
+          var_axes,
         })
       None => None
     }
@@ -203,6 +210,40 @@ pub fn TTFont::get_glyph(self : TTFont, codepoint : Int) -> Glyph {
   let metrics = self.glyph_metrics(gid)
   let outline = self.glyph_outline(gid)
   { glyph_id: gid, metrics, outline }
+}
+
+///|
+pub fn TTFont::glyph_outline_at(
+  self : TTFont,
+  glyph_id : Int,
+  axis_values : Map[String, Double],
+) -> Array[@svg.PathCommand] {
+  if self.var_axes.length() == 0 {
+    return self.glyph_outline(glyph_id)
+  }
+  guard self.cff is Some(cff) else { return self.glyph_outline(glyph_id) }
+  guard cff.ivs is Some(ivs) else { return self.glyph_outline(glyph_id) }
+  // Normalize coordinates
+  let coords : Array[Double] = []
+  for axis in self.var_axes {
+    let user_val = match axis_values.get(axis.tag) {
+      Some(v) => v
+      None => axis.default_value
+    }
+    coords.push(normalize_axis_coord(user_val, axis))
+  }
+  let scalars = precompute_scalars(ivs, 0, coords)
+  glyph_outline_by_id_var(self, glyph_id, scalars)
+}
+
+///|
+pub fn TTFont::char_outline_at(
+  self : TTFont,
+  codepoint : Int,
+  axis_values : Map[String, Double],
+) -> Array[@svg.PathCommand] {
+  let gid = self.glyph_index(codepoint)
+  self.glyph_outline_at(gid, axis_values)
 }
 
 ///|

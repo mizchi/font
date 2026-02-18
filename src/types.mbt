@@ -36,6 +36,39 @@ pub(all) struct TTFont {
   advance_widths : Array[Int]
   left_side_bearings : Array[Int]
   cff : CFFData?
+  var_axes : Array[VarAxis]
+}
+
+///|
+pub(all) struct VarAxis {
+  tag : String
+  min_value : Double
+  default_value : Double
+  max_value : Double
+}
+
+///|
+pub(all) struct VarRegionAxis {
+  start_coord : Double
+  peak_coord : Double
+  end_coord : Double
+}
+
+///|
+pub(all) struct VarRegion {
+  axes : Array[VarRegionAxis]
+}
+
+///|
+pub(all) struct ItemVariationData {
+  region_indices : Array[Int]
+  delta_sets : Array[Array[Int]]
+}
+
+///|
+pub(all) struct ItemVariationStore {
+  regions : Array[VarRegion]
+  data : Array[ItemVariationData]
 }
 
 ///|
@@ -52,6 +85,7 @@ pub(all) struct CFFData {
   default_width_x : Int
   nominal_width_x : Int
   is_cff2 : Bool
+  ivs : ItemVariationStore?
 }
 
 ///|

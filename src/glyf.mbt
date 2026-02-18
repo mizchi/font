@@ -288,8 +288,31 @@ fn glyph_outline_by_id(
     return []
   }
   match font.cff {
-    Some(cff) => cff_glyph_outline(font.data, cff, glyph_id)
+    Some(cff) =>
+      // Variable CFF2 font: use var path with default (zero) scalars
+      match cff.ivs {
+        Some(ivs) => {
+          let scalars = precompute_scalars(ivs, 0, [])
+          cff_glyph_outline_var(font.data, cff, glyph_id, scalars)
+        }
+        None => cff_glyph_outline(font.data, cff, glyph_id)
+      }
     None => glyf_outline_by_id(font, glyph_id)
+  }
+}
+
+///|
+fn glyph_outline_by_id_var(
+  font : TTFont,
+  glyph_id : Int,
+  scalars : Array[Double],
+) -> Array[@svg.PathCommand] {
+  if glyph_id < 0 || glyph_id >= font.num_glyphs {
+    return []
+  }
+  match font.cff {
+    Some(cff) => cff_glyph_outline_var(font.data, cff, glyph_id, scalars)
+    None => glyf_outline_by_id(font, glyph_id) // glyf variation not yet supported
   }
 }
 

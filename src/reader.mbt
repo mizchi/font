@@ -86,6 +86,18 @@ pub fn BinaryReader::read_tag(self : BinaryReader) -> String {
 }
 
 ///|
+pub fn BinaryReader::read_f2dot14(self : BinaryReader) -> Double {
+  self.read_int16().to_double() / 16384.0
+}
+
+///|
+pub fn BinaryReader::read_f16dot16(self : BinaryReader) -> Double {
+  let hi = self.read_int16()
+  let lo = self.read_uint16()
+  (hi * 65536 + lo).to_double() / 65536.0
+}
+
+///|
 pub fn BinaryReader::peek_uint16_at(self : BinaryReader, offset : Int) -> Int {
   let b0 = self.data[offset].to_int()
   let b1 = self.data[offset + 1].to_int()

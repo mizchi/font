@@ -66,3 +66,28 @@ pub fn parse_hmtx(
   }
   (advance_widths, left_side_bearings)
 }
+
+///|
+/// Parse fvar table: returns array of variation axes
+pub fn parse_fvar(reader : BinaryReader, offset : Int) -> Array[VarAxis] {
+  reader.seek(offset)
+  let _major = reader.read_uint16()
+  let _minor = reader.read_uint16()
+  let axis_array_offset = reader.read_uint16()
+  let _reserved = reader.read_uint16()
+  let axis_count = reader.read_uint16()
+  let _axis_size = reader.read_uint16()
+  let axes : Array[VarAxis] = []
+  reader.seek(offset + axis_array_offset)
+  for i = 0; i < axis_count; i = i + 1 {
+    let tag = reader.read_tag()
+    let min_value = reader.read_f16dot16()
+    let default_value = reader.read_f16dot16()
+    let max_value = reader.read_f16dot16()
+    let _flags = reader.read_uint16()
+    let _name_id = reader.read_uint16()
+    axes.push({ tag, min_value, default_value, max_value })
+    ignore(i)
+  }
+  axes
+}
