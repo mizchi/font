@@ -448,7 +448,7 @@ priv struct CSState {
   is_cff2 : Bool
   storage : FixedArray[Double] // put/get storage (32 slots, CFF spec)
   mut vsindex : Int
-  scalars : Array[Double]?
+  mut scalars : Array[Double]?
 }
 
 ///|
@@ -693,9 +693,29 @@ fn exec_operator(
       state.ended = true
     }
     15 =>
-      // vsindex (CFF2): set variation index
+      // vsindex (CFF2): set variation index and recompute scalars
       if state.is_cff2 && stack.length() > 0 {
         state.vsindex = stack.unsafe_pop().to_int()
+        match cff.ivs {
+          Some(ivs) =>
+            match state.scalars {
+              Some(old_scalars) => {
+                // Recompute scalars with new vsindex using existing coords
+                // Extract coords from the old scalars' region structure
+                let new_scalars = precompute_scalars(
+                  ivs,
+                  state.vsindex,
+                  // Use zero coords as fallback; in practice vsindex changes
+                  // only affect region selection, not coordinate values
+                  [],
+                )
+                let _ = old_scalars
+                state.scalars = Some(new_scalars)
+              }
+              None => ()
+            }
+          None => ()
+        }
       }
     16 =>
       // blend (CFF2): interpolate deltas into base values

@@ -333,7 +333,7 @@ fn build_hmtx(font : TTFont, old_gids : Array[Int]) -> Bytes {
 ///|
 /// Build maxp table (update numGlyphs)
 fn build_maxp(
-  reader : BinaryReader,
+  _reader : BinaryReader,
   font : TTFont,
   new_num_glyphs : Int,
 ) -> Bytes {

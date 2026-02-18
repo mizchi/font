@@ -145,7 +145,6 @@ pub(all) struct GlyphPosition {
 ///|
 priv struct TableRecord {
   offset : Int
-  length : Int
 }
 
 ///|

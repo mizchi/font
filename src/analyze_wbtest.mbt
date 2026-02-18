@@ -54,6 +54,6 @@ test "analyze/small_font" {
 
 ///|
 test "analyze/too_small" {
-  let data = Bytes::makei(4, fn(i) { b'\x00' })
+  let data = Bytes::makei(4, fn(_i) { b'\x00' })
   assert_true(analyze_tables(data) is None)
 }

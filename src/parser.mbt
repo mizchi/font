@@ -38,8 +38,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     let tag = reader.read_tag()
     let _checksum = reader.read_uint32()
     let offset = reader.read_uint32()
-    let length = reader.read_uint32()
-    tables[tag] = { offset, length }
+    let _length = reader.read_uint32()
+    tables[tag] = { offset, }
     ignore(i)
   }
   guard tables.get("head") is Some(head_rec) else { return None }

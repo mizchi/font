@@ -19,8 +19,6 @@ let known_tags : FixedArray[String] = [
 priv struct Woff2TableEntry {
   tag : String
   transform_version : Int
-  orig_length : Int
-  transform_length : Int
   src_offset : Int
   src_length : Int
 }
@@ -119,8 +117,6 @@ pub fn parse_woff2(data : Bytes) -> TTFont? {
     entries.push({
       tag,
       transform_version,
-      orig_length,
-      transform_length,
       src_offset,
       src_length: transform_length,
     })
