@@ -74,6 +74,139 @@ pub fn glyphAdvance(codepoint : Int, font_size : Double) -> Double {
 }
 
 ///|
+/// Get font name by nameID
+pub fn fontName(name_id : Int) -> String {
+  match global_font.val {
+    Some(font) =>
+      match font.font_name(name_id) {
+        Some(s) => s
+        None => ""
+      }
+    None => ""
+  }
+}
+
+///|
+/// Get kerning advance for two codepoints at given font size
+pub fn kernAdvance(cp1 : Int, cp2 : Int, font_size : Double) -> Double {
+  match global_font.val {
+    Some(font) => {
+      let gid1 = font.glyph_index(cp1)
+      let gid2 = font.glyph_index(cp2)
+      let kern = font.kern_pair(gid1, gid2)
+      kern.to_double() * font_size / font.units_per_em.to_double()
+    }
+    None => 0.0
+  }
+}
+
+///|
+/// Layout text and return JSON array of glyph positions
+pub fn layoutText(text : String, font_size : Double) -> String {
+  match global_font.val {
+    Some(font) => {
+      let positions = font.layout_text(text, font_size)
+      let buf = StringBuilder::new()
+      buf.write_char('[')
+      for i, pos in positions {
+        if i > 0 {
+          buf.write_char(',')
+        }
+        buf.write_string("{\"codepoint\":")
+        buf.write_string(pos.codepoint.to_string())
+        buf.write_string(",\"glyph_id\":")
+        buf.write_string(pos.glyph_id.to_string())
+        buf.write_string(",\"x_offset\":")
+        write_num(buf, pos.x_offset)
+        buf.write_string(",\"y_offset\":")
+        write_num(buf, pos.y_offset)
+        buf.write_string(",\"x_advance\":")
+        write_num(buf, pos.x_advance)
+        buf.write_char('}')
+      }
+      buf.write_char(']')
+      buf.to_string()
+    }
+    None => "[]"
+  }
+}
+
+///|
+/// Measure text width at given font size
+pub fn measureText(text : String, font_size : Double) -> Double {
+  match global_font.val {
+    Some(font) => font.measure_text(text, font_size)
+    None => 0.0
+  }
+}
+
+///|
+/// Get font weight class from OS/2 table
+pub fn fontWeightClass() -> Int {
+  match global_font.val {
+    Some(font) => font.weight_class()
+    None => 0
+  }
+}
+
+///|
+/// Check if font is fixed pitch (returns 0 or 1)
+pub fn isFixedPitch() -> Int {
+  match global_font.val {
+    Some(font) => if font.is_fixed_pitch() { 1 } else { 0 }
+    None => 0
+  }
+}
+
+///|
+/// Get codepoint coverage as JSON array
+pub fn codepointCoverage() -> String {
+  match global_font.val {
+    Some(font) => {
+      let cps = font.codepoint_coverage()
+      let buf = StringBuilder::new()
+      buf.write_char('[')
+      for i, cp in cps {
+        if i > 0 {
+          buf.write_char(',')
+        }
+        buf.write_string(cp.to_string())
+      }
+      buf.write_char(']')
+      buf.to_string()
+    }
+    None => "[]"
+  }
+}
+
+///|
+/// Get table sizes as JSON object
+pub fn tableSizes() -> String {
+  match global_font.val {
+    Some(font) =>
+      match @font.analyze_tables(font.data) {
+        Some(tables) => {
+          let buf = StringBuilder::new()
+          buf.write_char('{')
+          for i, tbl in tables {
+            if i > 0 {
+              buf.write_char(',')
+            }
+            buf.write_char('"')
+            buf.write_string(tbl.tag)
+            buf.write_string("\":")
+            buf.write_string(tbl.length.to_string())
+          }
+          buf.write_char('}')
+          buf.to_string()
+        }
+        None => "{}"
+      }
+    None => "{}"
+  }
+}
+
+///|
 /// Convert PathCommand array to SVG path data string
 fn commands_to_svg_path(cmds : Array[@svg.PathCommand]) -> String {
   let buf = StringBuilder::new()

@@ -38,8 +38,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     let tag = reader.read_tag()
     let _checksum = reader.read_uint32()
     let offset = reader.read_uint32()
-    let _length = reader.read_uint32()
-    tables[tag] = { offset, }
+    let length = reader.read_uint32()
+    tables[tag] = { offset, length }
     ignore(i)
   }
   guard tables.get("head") is Some(head_rec) else { return None }
@@ -80,6 +80,14 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     Some(name_rec) => parse_name(reader, name_rec.offset)
     None => {}
   }
+  let os2 : OS2Table? = match tables.get("OS/2") {
+    Some(os2_rec) => Some(parse_os2(reader, os2_rec.offset))
+    None => None
+  }
+  let post : PostTable? = match tables.get("post") {
+    Some(post_rec) => Some(parse_post(reader, post_rec.offset, num_glyphs))
+    None => None
+  }
   if has_glyf {
     guard tables.get("loca") is Some(loca_rec) else { return None }
     guard tables.get("glyf") is Some(glyf_rec) else { return None }
@@ -113,6 +121,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
       kern_pairs,
       avar_segments,
       name_records,
+      os2,
+      post,
     })
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
@@ -139,6 +149,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
           kern_pairs,
           avar_segments,
           name_records,
+          os2,
+          post,
         })
       None => None
     }
@@ -167,6 +179,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
           kern_pairs,
           avar_segments,
           name_records,
+          os2,
+          post,
         })
       None => None
     }
@@ -326,6 +340,65 @@ pub fn TTFont::kern_pair(self : TTFont, left_gid : Int, right_gid : Int) -> Int 
 /// Get font name by nameID (1=family, 2=subfamily, 4=full name, 6=postscript name)
 pub fn TTFont::font_name(self : TTFont, name_id : Int) -> String? {
   self.name_records.get(name_id)
+}
+
+///|
+/// Get weight class from OS/2 table (400=Regular, 700=Bold)
+pub fn TTFont::weight_class(self : TTFont) -> Int {
+  match self.os2 {
+    Some(os2) => os2.us_weight_class
+    None => 400
+  }
+}
+
+///|
+/// Check if font is fixed-pitch from post table
+pub fn TTFont::is_fixed_pitch(self : TTFont) -> Bool {
+  match self.post {
+    Some(post) => post.is_fixed_pitch
+    None => false
+  }
+}
+
+///|
+/// Get italic angle from post table
+pub fn TTFont::italic_angle(self : TTFont) -> Double {
+  match self.post {
+    Some(post) => post.italic_angle
+    None => 0.0
+  }
+}
+
+///|
+/// Get x-height from OS/2 table
+pub fn TTFont::x_height(self : TTFont) -> Int {
+  match self.os2 {
+    Some(os2) => os2.sx_height
+    None => 0
+  }
+}
+
+///|
+/// Get cap-height from OS/2 table
+pub fn TTFont::cap_height(self : TTFont) -> Int {
+  match self.os2 {
+    Some(os2) => os2.s_cap_height
+    None => 0
+  }
+}
+
+///|
+/// Get glyph name from post table
+pub fn TTFont::glyph_name(self : TTFont, glyph_id : Int) -> String {
+  match self.post {
+    Some(post) =>
+      if glyph_id < post.glyph_names.length() {
+        post.glyph_names[glyph_id]
+      } else {
+        ""
+      }
+    None => ""
+  }
 }
 
 ///|

@@ -6,6 +6,16 @@ import {
 }
 
 // Values
+pub fn analyze_tables(Bytes) -> Array[TableInfo]?
+
+pub fn bytes_slice(Bytes, Int, Int) -> Bytes
+
+pub fn calc_table_checksum(Bytes) -> Int
+
+pub fn log2_floor(Int) -> Int
+
+pub fn pad4(Int) -> Int
+
 pub fn parse_avar(BinaryReader, Int, Int) -> Array[Array[(Double, Double)]]
 
 pub fn parse_cmap(BinaryReader, Int) -> Map[Int, Int]
@@ -32,13 +42,25 @@ pub fn parse_maxp(BinaryReader, Int) -> Int
 
 pub fn parse_name(BinaryReader, Int) -> Map[Int, String]
 
+pub fn parse_os2(BinaryReader, Int) -> OS2Table
+
+pub fn parse_post(BinaryReader, Int, Int) -> PostTable
+
 pub fn parse_ttf(Bytes) -> TTFont?
 
 pub fn parse_woff1(Bytes) -> TTFont?
 
 pub fn parse_woff2(Bytes) -> TTFont?
 
+pub fn rebuild_sfnt(Int, Array[(String, Bytes)]) -> Bytes
+
 pub fn scale_commands(Array[@svg.PathCommand], Double, Bool) -> Array[@svg.PathCommand]
+
+pub fn subset_font(Bytes, Array[Int]) -> Bytes?
+
+pub fn write_be16(Array[Byte], Int, Int) -> Unit
+
+pub fn write_be32(Array[Byte], Int, Int) -> Unit
 
 // Errors
 
@@ -98,6 +120,14 @@ pub(all) struct GlyphMetrics {
   bbox : GlyphBBox
 }
 
+pub(all) struct GlyphPosition {
+  codepoint : Int
+  glyph_id : Int
+  x_offset : Double
+  y_offset : Double
+  x_advance : Double
+}
+
 pub(all) struct GvarData {
   axis_count : Int
   shared_tuples : Array[Array[Double]]
@@ -114,6 +144,34 @@ pub(all) struct ItemVariationData {
 pub(all) struct ItemVariationStore {
   regions : Array[VarRegion]
   data : Array[ItemVariationData]
+}
+
+pub(all) struct OS2Table {
+  version : Int
+  us_weight_class : Int
+  us_width_class : Int
+  fs_type : Int
+  panose : FixedArray[Int]
+  ul_unicode_range1 : Int
+  ul_unicode_range2 : Int
+  ul_unicode_range3 : Int
+  ul_unicode_range4 : Int
+  fs_selection : Int
+  s_typo_ascender : Int
+  s_typo_descender : Int
+  s_typo_line_gap : Int
+  us_win_ascent : Int
+  us_win_descent : Int
+  sx_height : Int
+  s_cap_height : Int
+}
+
+pub(all) struct PostTable {
+  italic_angle : Double
+  underline_position : Int
+  underline_thickness : Int
+  is_fixed_pitch : Bool
+  glyph_names : Array[String]
 }
 
 pub(all) struct TTFont {
@@ -136,17 +194,34 @@ pub(all) struct TTFont {
   kern_pairs : Map[Int, Int]
   avar_segments : Array[Array[(Double, Double)]]
   name_records : Map[Int, String]
+  os2 : OS2Table?
+  post : PostTable?
 }
+pub fn TTFont::cap_height(Self) -> Int
 pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]
 pub fn TTFont::char_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
+pub fn TTFont::codepoint_coverage(Self) -> Array[Int]
 pub fn TTFont::font_name(Self, Int) -> String?
 pub fn TTFont::get_glyph(Self, Int) -> Glyph
 pub fn TTFont::glyph_index(Self, Int) -> Int
 pub fn TTFont::glyph_metrics(Self, Int) -> GlyphMetrics
+pub fn TTFont::glyph_name(Self, Int) -> String
 pub fn TTFont::glyph_outline(Self, Int) -> Array[@svg.PathCommand]
 pub fn TTFont::glyph_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
+pub fn TTFont::is_fixed_pitch(Self) -> Bool
+pub fn TTFont::italic_angle(Self) -> Double
 pub fn TTFont::kern_pair(Self, Int, Int) -> Int
+pub fn TTFont::layout_text(Self, String, Double) -> Array[GlyphPosition]
+pub fn TTFont::measure_text(Self, String, Double) -> Double
 pub fn TTFont::scaled_outline(Self, Int, Double) -> Array[@svg.PathCommand]
+pub fn TTFont::weight_class(Self) -> Int
+pub fn TTFont::x_height(Self) -> Int
+
+pub(all) struct TableInfo {
+  tag : String
+  offset : Int
+  length : Int
+}
 
 pub(all) struct VarAxis {
   tag : String

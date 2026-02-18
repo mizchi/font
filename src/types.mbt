@@ -41,6 +41,8 @@ pub(all) struct TTFont {
   kern_pairs : Map[Int, Int]
   avar_segments : Array[Array[(Double, Double)]]
   name_records : Map[Int, String]
+  os2 : OS2Table?
+  post : PostTable?
 }
 
 ///|
@@ -102,8 +104,48 @@ pub(all) struct GvarData {
 }
 
 ///|
+pub(all) struct OS2Table {
+  version : Int
+  us_weight_class : Int
+  us_width_class : Int
+  fs_type : Int
+  panose : FixedArray[Int]
+  ul_unicode_range1 : Int
+  ul_unicode_range2 : Int
+  ul_unicode_range3 : Int
+  ul_unicode_range4 : Int
+  fs_selection : Int
+  s_typo_ascender : Int
+  s_typo_descender : Int
+  s_typo_line_gap : Int
+  us_win_ascent : Int
+  us_win_descent : Int
+  sx_height : Int
+  s_cap_height : Int
+}
+
+///|
+pub(all) struct PostTable {
+  italic_angle : Double
+  underline_position : Int
+  underline_thickness : Int
+  is_fixed_pitch : Bool
+  glyph_names : Array[String]
+}
+
+///|
+pub(all) struct GlyphPosition {
+  codepoint : Int
+  glyph_id : Int
+  x_offset : Double
+  y_offset : Double
+  x_advance : Double
+}
+
+///|
 priv struct TableRecord {
   offset : Int
+  length : Int
 }
 
 ///|

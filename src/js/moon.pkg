@@ -6,7 +6,20 @@ import {
 options(
   link: {
     "js": {
-      "exports": [ "loadFont", "glyphToSvgPath", "glyphAdvance", "getFontInfo" ],
+      "exports": [
+        "loadFont",
+        "glyphToSvgPath",
+        "glyphAdvance",
+        "getFontInfo",
+        "fontName",
+        "kernAdvance",
+        "layoutText",
+        "measureText",
+        "fontWeightClass",
+        "isFixedPitch",
+        "codepointCoverage",
+        "tableSizes",
+      ],
       "format": "esm",
     },
   },
