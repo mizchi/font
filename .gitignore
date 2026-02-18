@@ -2,5 +2,6 @@ _build/
 target
 node_modules/
 .mooncakes/
+fixtures/
 debug-output.svg
 debug-weight-comparison.svg

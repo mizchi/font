@@ -223,6 +223,25 @@ Horizontal LTR text with kerning and vertical top-to-bottom text are fully suppo
 | `glyphIds()` | JSON string | All glyph IDs (0 to numGlyphs-1) |
 | `tableSizes()` | JSON string | Table tag to byte size |
 
+## Development
+
+```bash
+# Download test fixtures and run tests
+just test
+
+# Or manually
+bash scripts/download-fixtures.sh
+moon test
+
+# Type check
+just check
+
+# Format code
+just fmt
+```
+
+Test fixtures (NotoSansMono, etc.) are not committed to the repository. They are downloaded from [GitHub Releases](https://github.com/mizchi/font/releases/tag/fixtures-v1) on first run.
+
 ## Dependencies
 
 - [mizchi/svg](https://github.com/mizchi/svg) — `PathCommand` type for glyph outlines
