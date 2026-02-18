@@ -103,6 +103,13 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
   let post : PostTable? = tables
     .get("post")
     .map(fn(post_rec) { parse_post(reader, post_rec.offset, num_glyphs) })
+  let gasp : Array[GaspRange] = match tables.get("gasp") {
+    Some(gasp_rec) => parse_gasp(reader, gasp_rec.offset)
+    None => []
+  }
+  let vorg : VorgData? = tables
+    .get("VORG")
+    .map(fn(vorg_rec) { parse_vorg(reader, vorg_rec.offset) })
   if has_glyf {
     guard tables.get("loca") is Some(loca_rec) else { return None }
     guard tables.get("glyf") is Some(glyf_rec) else { return None }
@@ -139,6 +146,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
       os2,
       post,
       vertical,
+      gasp,
+      vorg,
     })
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
@@ -166,6 +175,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         os2,
         post,
         vertical,
+        gasp,
+        vorg,
       }
     })
   } else if has_cff2 {
@@ -194,6 +205,8 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         os2,
         post,
         vertical,
+        gasp,
+        vorg,
       }
     })
   } else {

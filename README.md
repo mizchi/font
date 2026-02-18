@@ -24,6 +24,10 @@ let width = font.measure_text("Hello", 48.0)
 // Variable font with axis values
 let cmds = font.char_outline_at('A'.to_int(), { "wght": 700.0 })
 
+// Vertical text layout
+let vpositions = font.layout_text_vertical("縦書き", 48.0)
+let vheight = font.measure_text_vertical("縦書き", 48.0)
+
 // Font subsetting (glyf-based TrueType only)
 let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 ```
@@ -65,6 +69,8 @@ This library covers the core OpenType tables needed for **glyph rendering, metri
 | `OS/2` | Weight/width class, PANOSE, x-height, cap-height |
 | `post` | Italic angle, fixed pitch, glyph names (v2.0) |
 | `vhea`/`vmtx` | Vertical metrics — advance heights and top side bearings |
+| `gasp` | Grid-fitting and scan-conversion ranges |
+| `VORG` | Vertical origin Y coordinates for CFF glyphs |
 
 #### ❌ Not Parsed
 
@@ -96,14 +102,9 @@ The tables below are **not** parsed. Most of them are only needed for advanced u
 |-------|-------------|
 | `MATH` | Math layout constants and glyph assembly — only for TeX-like math typesetting engines |
 | `cvt`/`fpgm`/`prep` | TrueType hinting programs — grid-fitting instructions for low-DPI rasterization. Irrelevant for SVG/vector output |
-| `gasp` | Grid-fitting control — tells rasterizers when to apply hinting. Only matters for pixel rendering |
 | `hdmx` | Pre-computed device widths for specific PPEMs — legacy optimization for bitmap rendering |
 
-**📏 Vertical Layout** — Required for traditional top-to-bottom CJK text (e.g. Japanese vertical typesetting). Horizontal CJK works without these.
-
-| Table | Description |
-|-------|-------------|
-| `VORG` | Vertical origin — CFF vertical glyph origin positions |
+**📏 Vertical Layout** — Most vertical layout tables are now parsed. The remaining table is rarely needed.
 
 **🍎 Apple AAT** — Apple-proprietary layout system. Most modern fonts use OpenType (GSUB/GPOS) instead. Only found in macOS system fonts and some legacy fonts.
 
@@ -201,7 +202,7 @@ Horizontal left-to-right text with kerning is fully supported. The unsupported f
 | Text width measurement | ✅ | |
 | OpenType shaping (GSUB/GPOS) | ❌ | Full shaping engine — needed for Arabic, Devanagari, ligatures |
 | Bidirectional text | ❌ | Unicode BiDi algorithm — needed for mixed LTR/RTL text |
-| Vertical layout | ❌ | Top-to-bottom CJK typesetting |
+| Vertical layout | ✅ | Top-to-bottom CJK typesetting (vhea/vmtx/VORG) |
 | Line breaking | ❌ | Text wrapping — typically handled by the application layer |
 
 ### JS Bindings (Wasm)

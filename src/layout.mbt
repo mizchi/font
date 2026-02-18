@@ -65,6 +65,68 @@ pub fn TTFont::measure_text(
 }
 
 ///|
+/// Layout text vertically (top-to-bottom) into positioned glyphs
+pub fn TTFont::layout_text_vertical(
+  self : TTFont,
+  text : String,
+  font_size : Double,
+) -> Array[GlyphPosition] {
+  let scale = font_size / self.units_per_em.to_double()
+  let codepoints = string_to_codepoints(text)
+  let positions : Array[GlyphPosition] = []
+  let mut y = 0.0
+  for cp in codepoints {
+    let gid = self.glyph_index(cp)
+    let advance_height = match self.vertical {
+      Some(vm) =>
+        if gid < vm.advance_heights.length() {
+          vm.advance_heights[gid]
+        } else {
+          self.units_per_em
+        }
+      None => self.units_per_em
+    }
+    let origin_y = self.vert_origin_y(gid)
+    let y_advance = advance_height.to_double() * scale
+    positions.push({
+      codepoint: cp,
+      glyph_id: gid,
+      x_offset: origin_y.to_double() * scale,
+      y_offset: y,
+      x_advance: y_advance,
+    })
+    y += y_advance
+  }
+  positions
+}
+
+///|
+/// Measure total text height for vertical layout
+pub fn TTFont::measure_text_vertical(
+  self : TTFont,
+  text : String,
+  font_size : Double,
+) -> Double {
+  let scale = font_size / self.units_per_em.to_double()
+  let codepoints = string_to_codepoints(text)
+  let mut height = 0.0
+  for cp in codepoints {
+    let gid = self.glyph_index(cp)
+    let advance_height = match self.vertical {
+      Some(vm) =>
+        if gid < vm.advance_heights.length() {
+          vm.advance_heights[gid]
+        } else {
+          self.units_per_em
+        }
+      None => self.units_per_em
+    }
+    height += advance_height.to_double() * scale
+  }
+  height
+}
+
+///|
 /// Convert String to array of Unicode codepoints (handling surrogate pairs)
 fn string_to_codepoints(s : String) -> Array[Int] {
   let result : Array[Int] = []

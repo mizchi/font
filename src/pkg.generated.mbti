@@ -30,6 +30,8 @@ pub fn parse_font_collection(Bytes) -> Array[TTFont]?
 
 pub fn parse_fvar(BinaryReader, Int) -> Array[VarAxis]
 
+pub fn parse_gasp(BinaryReader, Int) -> Array[GaspRange]
+
 pub fn parse_head(BinaryReader, Int) -> (Int, Int)
 
 pub fn parse_hhea(BinaryReader, Int) -> (Int, Int, Int, Int)
@@ -53,6 +55,8 @@ pub fn parse_ttf(Bytes) -> TTFont?
 pub fn parse_vhea(BinaryReader, Int) -> (Int, Int, Int)
 
 pub fn parse_vmtx(BinaryReader, Int, Int, Int) -> (Array[Int], Array[Int])
+
+pub fn parse_vorg(BinaryReader, Int) -> VorgData
 
 pub fn parse_woff1(Bytes) -> TTFont?
 
@@ -105,6 +109,11 @@ pub(all) struct CFFData {
 pub(all) struct CFFIndex {
   data_offset : Int
   offsets : Array[Int]
+}
+
+pub(all) struct GaspRange {
+  max_ppem : Int
+  behavior : Int
 }
 
 pub(all) struct Glyph {
@@ -203,6 +212,8 @@ pub(all) struct TTFont {
   os2 : OS2Table?
   post : PostTable?
   vertical : VerticalMetrics?
+  gasp : Array[GaspRange]
+  vorg : VorgData?
 }
 pub fn TTFont::cap_height(Self) -> Int
 pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]
@@ -221,8 +232,11 @@ pub fn TTFont::is_fixed_pitch(Self) -> Bool
 pub fn TTFont::italic_angle(Self) -> Double
 pub fn TTFont::kern_pair(Self, Int, Int) -> Int
 pub fn TTFont::layout_text(Self, String, Double) -> Array[GlyphPosition]
+pub fn TTFont::layout_text_vertical(Self, String, Double) -> Array[GlyphPosition]
 pub fn TTFont::measure_text(Self, String, Double) -> Double
+pub fn TTFont::measure_text_vertical(Self, String, Double) -> Double
 pub fn TTFont::scaled_outline(Self, Int, Double) -> Array[@svg.PathCommand]
+pub fn TTFont::vert_origin_y(Self, Int) -> Int
 pub fn TTFont::weight_class(Self) -> Int
 pub fn TTFont::x_height(Self) -> Int
 
@@ -254,6 +268,11 @@ pub(all) struct VerticalMetrics {
   v_descent : Int
   advance_heights : Array[Int]
   top_side_bearings : Array[Int]
+}
+
+pub(all) struct VorgData {
+  default_vert_origin_y : Int
+  vert_origins : Map[Int, Int]
 }
 
 // Type aliases

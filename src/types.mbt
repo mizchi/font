@@ -44,6 +44,8 @@ pub(all) struct TTFont {
   os2 : OS2Table?
   post : PostTable?
   vertical : VerticalMetrics?
+  gasp : Array[GaspRange]
+  vorg : VorgData?
 }
 
 ///|
@@ -131,6 +133,18 @@ pub(all) struct VerticalMetrics {
   v_descent : Int
   advance_heights : Array[Int]
   top_side_bearings : Array[Int]
+}
+
+///|
+pub(all) struct GaspRange {
+  max_ppem : Int
+  behavior : Int
+}
+
+///|
+pub(all) struct VorgData {
+  default_vert_origin_y : Int
+  vert_origins : Map[Int, Int]
 }
 
 ///|
