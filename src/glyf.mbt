@@ -287,6 +287,14 @@ fn glyph_outline_by_id(
   if glyph_id < 0 || glyph_id >= font.num_glyphs {
     return []
   }
+  match font.cff {
+    Some(cff) => cff_glyph_outline(font.data, cff, glyph_id)
+    None => glyf_outline_by_id(font, glyph_id)
+  }
+}
+
+///|
+fn glyf_outline_by_id(font : TTFont, glyph_id : Int) -> Array[@svg.PathCommand] {
   let glyf_offset = font.loca[glyph_id]
   let next_offset = font.loca[glyph_id + 1]
   if glyf_offset == next_offset {
