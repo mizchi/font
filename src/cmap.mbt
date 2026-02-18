@@ -1,29 +1,73 @@
 ///|
 /// Parse cmap table: returns Map[codepoint -> glyph_id]
+/// Prefers Format 12 (full Unicode) over Format 4 (BMP only)
 pub fn parse_cmap(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
   let result : Map[Int, Int] = {}
   reader.seek(offset)
   let _version = reader.read_uint16()
   let num_tables = reader.read_uint16()
-  let mut subtable_offset = -1
+  // Collect candidate subtable offsets
+  let mut format12_offset = -1
+  let mut format4_offset = -1
   for i = 0; i < num_tables; i = i + 1 {
     let platform_id = reader.read_uint16()
     let encoding_id = reader.read_uint16()
     let sub_offset = reader.read_uint32()
+    let abs_offset = offset + sub_offset
+    // Format 12 candidates: platformID=0/encodingID>=3, or platformID=3/encodingID=10
+    if (platform_id == 0 && encoding_id >= 3) ||
+      (platform_id == 3 && encoding_id == 10) {
+      format12_offset = abs_offset
+    }
+    // Format 4 candidates: platformID=0, or platformID=3/encodingID=1
     if platform_id == 0 || (platform_id == 3 && encoding_id == 1) {
-      subtable_offset = offset + sub_offset
+      format4_offset = abs_offset
     }
     ignore(i)
   }
-  if subtable_offset < 0 {
-    return result
+  // Prefer Format 12
+  if format12_offset >= 0 {
+    reader.seek(format12_offset)
+    let format = reader.read_uint16()
+    if format == 12 {
+      parse_cmap_format12(reader, format12_offset, result)
+      return result
+    }
   }
-  reader.seek(subtable_offset)
-  let format = reader.read_uint16()
-  if format == 4 {
-    parse_cmap_format4(reader, subtable_offset, result)
+  // Fallback to Format 4
+  if format4_offset >= 0 {
+    reader.seek(format4_offset)
+    let format = reader.read_uint16()
+    if format == 4 {
+      parse_cmap_format4(reader, format4_offset, result)
+    }
   }
   result
+}
+
+///|
+fn parse_cmap_format12(
+  reader : BinaryReader,
+  subtable_offset : Int,
+  result : Map[Int, Int],
+) -> Unit {
+  // Format 12: format(u16=12) + reserved(u16) + length(u32) + language(u32) + numGroups(u32)
+  reader.seek(subtable_offset + 4) // skip format(u16) + reserved(u16)
+  let _length = reader.read_uint32()
+  let _language = reader.read_uint32()
+  let num_groups = reader.read_uint32()
+  for i = 0; i < num_groups; i = i + 1 {
+    let start_char_code = reader.read_uint32()
+    let end_char_code = reader.read_uint32()
+    let start_glyph_id = reader.read_uint32()
+    for cp = start_char_code; cp <= end_char_code; cp = cp + 1 {
+      let gid = start_glyph_id + (cp - start_char_code)
+      if gid != 0 {
+        result[cp] = gid
+      }
+    }
+    ignore(i)
+  }
 }
 
 ///|

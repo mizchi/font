@@ -6,6 +6,8 @@ import {
 }
 
 // Values
+pub fn parse_avar(BinaryReader, Int, Int) -> Array[Array[(Double, Double)]]
+
 pub fn parse_cmap(BinaryReader, Int) -> Map[Int, Int]
 
 pub fn parse_font(Bytes) -> TTFont?
@@ -22,9 +24,13 @@ pub fn parse_hhea(BinaryReader, Int) -> (Int, Int, Int, Int)
 
 pub fn parse_hmtx(BinaryReader, Int, Int, Int) -> (Array[Int], Array[Int])
 
+pub fn parse_kern(BinaryReader, Int) -> Map[Int, Int]
+
 pub fn parse_loca(BinaryReader, Int, Int, Int) -> Array[Int]
 
 pub fn parse_maxp(BinaryReader, Int) -> Int
+
+pub fn parse_name(BinaryReader, Int) -> Map[Int, String]
 
 pub fn parse_ttf(Bytes) -> TTFont?
 
@@ -127,14 +133,19 @@ pub(all) struct TTFont {
   cff : CFFData?
   gvar : GvarData?
   var_axes : Array[VarAxis]
+  kern_pairs : Map[Int, Int]
+  avar_segments : Array[Array[(Double, Double)]]
+  name_records : Map[Int, String]
 }
 pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]
 pub fn TTFont::char_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
+pub fn TTFont::font_name(Self, Int) -> String?
 pub fn TTFont::get_glyph(Self, Int) -> Glyph
 pub fn TTFont::glyph_index(Self, Int) -> Int
 pub fn TTFont::glyph_metrics(Self, Int) -> GlyphMetrics
 pub fn TTFont::glyph_outline(Self, Int) -> Array[@svg.PathCommand]
 pub fn TTFont::glyph_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.PathCommand]
+pub fn TTFont::kern_pair(Self, Int, Int) -> Int
 pub fn TTFont::scaled_outline(Self, Int, Double) -> Array[@svg.PathCommand]
 
 pub(all) struct VarAxis {

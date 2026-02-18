@@ -67,6 +67,19 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     Some(fvar_rec) => parse_fvar(reader, fvar_rec.offset)
     None => []
   }
+  let kern_pairs : Map[Int, Int] = match tables.get("kern") {
+    Some(kern_rec) => parse_kern(reader, kern_rec.offset)
+    None => {}
+  }
+  let avar_segments : Array[Array[(Double, Double)]] = match
+    tables.get("avar") {
+    Some(avar_rec) => parse_avar(reader, avar_rec.offset, var_axes.length())
+    None => []
+  }
+  let name_records : Map[Int, String] = match tables.get("name") {
+    Some(name_rec) => parse_name(reader, name_rec.offset)
+    None => {}
+  }
   if has_glyf {
     guard tables.get("loca") is Some(loca_rec) else { return None }
     guard tables.get("glyf") is Some(glyf_rec) else { return None }
@@ -97,6 +110,9 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
       cff: None,
       gvar: gvar_data,
       var_axes,
+      kern_pairs,
+      avar_segments,
+      name_records,
     })
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
@@ -120,6 +136,9 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
           cff: Some(cff),
           gvar: None,
           var_axes,
+          kern_pairs,
+          avar_segments,
+          name_records,
         })
       None => None
     }
@@ -145,6 +164,9 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
           cff: Some(cff),
           gvar: None,
           var_axes,
+          kern_pairs,
+          avar_segments,
+          name_records,
         })
       None => None
     }
@@ -237,14 +259,18 @@ pub fn TTFont::glyph_outline_at(
   if self.var_axes.length() == 0 {
     return self.glyph_outline(glyph_id)
   }
-  // Normalize coordinates
+  // Normalize coordinates with avar mapping
   let coords : Array[Double] = []
-  for axis in self.var_axes {
+  for i, axis in self.var_axes {
     let user_val = match axis_values.get(axis.tag) {
       Some(v) => v
       None => axis.default_value
     }
-    coords.push(normalize_axis_coord(user_val, axis))
+    let mut coord = normalize_axis_coord(user_val, axis)
+    if i < self.avar_segments.length() {
+      coord = apply_avar(coord, self.avar_segments[i])
+    }
+    coords.push(coord)
   }
   // CFF2 variable font path
   match self.cff {
@@ -284,4 +310,51 @@ pub fn TTFont::scaled_outline(
   let outline = self.char_outline(codepoint)
   let s = font_size / self.units_per_em.to_double()
   scale_commands(outline, s, true)
+}
+
+///|
+/// Get kerning value for a pair of glyph IDs
+pub fn TTFont::kern_pair(self : TTFont, left_gid : Int, right_gid : Int) -> Int {
+  let key = (left_gid << 16) | right_gid
+  match self.kern_pairs.get(key) {
+    Some(v) => v
+    None => 0
+  }
+}
+
+///|
+/// Get font name by nameID (1=family, 2=subfamily, 4=full name, 6=postscript name)
+pub fn TTFont::font_name(self : TTFont, name_id : Int) -> String? {
+  self.name_records.get(name_id)
+}
+
+///|
+/// Apply avar segment mapping (piecewise linear interpolation)
+fn apply_avar(coord : Double, segment : Array[(Double, Double)]) -> Double {
+  if segment.length() == 0 {
+    return coord
+  }
+  // Below first point
+  let (first_from, first_to) = segment[0]
+  if coord <= first_from {
+    return first_to
+  }
+  // Above last point
+  let (last_from, last_to) = segment[segment.length() - 1]
+  if coord >= last_from {
+    return last_to
+  }
+  // Find segment and interpolate
+  for i = 1; i < segment.length(); i = i + 1 {
+    let (from1, to1) = segment[i - 1]
+    let (from2, to2) = segment[i]
+    if coord <= from2 {
+      if from2 == from1 {
+        return to2
+      }
+      let t = (coord - from1) / (from2 - from1)
+      return to1 + t * (to2 - to1)
+    }
+  }
+  coord
 }

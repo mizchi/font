@@ -38,6 +38,9 @@ pub(all) struct TTFont {
   cff : CFFData?
   gvar : GvarData?
   var_axes : Array[VarAxis]
+  kern_pairs : Map[Int, Int]
+  avar_segments : Array[Array[(Double, Double)]]
+  name_records : Map[Int, String]
 }
 
 ///|
