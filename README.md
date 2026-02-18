@@ -34,7 +34,7 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 
 ## Supported Specifications
 
-This library covers the core OpenType tables needed for **glyph rendering, metrics, variable fonts, and basic text layout**. Latin, CJK, and other scripts that don't require complex shaping work well out of the box.
+This library covers the core OpenType tables needed for **glyph rendering, metrics, variable fonts, and text layout** (horizontal and vertical). Latin, CJK, and other scripts that don't require complex shaping work well out of the box.
 
 ### Font Formats
 
@@ -104,8 +104,6 @@ The tables below are **not** parsed. Most of them are only needed for advanced u
 | `cvt`/`fpgm`/`prep` | TrueType hinting programs — grid-fitting instructions for low-DPI rasterization. Irrelevant for SVG/vector output |
 | `hdmx` | Pre-computed device widths for specific PPEMs — legacy optimization for bitmap rendering |
 
-**📏 Vertical Layout** — Most vertical layout tables are now parsed. The remaining table is rarely needed.
-
 **🍎 Apple AAT** — Apple-proprietary layout system. Most modern fonts use OpenType (GSUB/GPOS) instead. Only found in macOS system fonts and some legacy fonts.
 
 | Table | Description |
@@ -153,7 +151,7 @@ All standard operators for outline extraction are supported:
 
 ### cmap Formats
 
-Format 4 + 12 cover virtually all modern fonts. The unsupported formats are legacy or niche:
+Formats 0, 4, 6, and 12 cover virtually all modern fonts. The unsupported formats are legacy or niche:
 
 | Format | | Coverage |
 |--------|:-:|----------|
@@ -192,7 +190,7 @@ Subsetting extracts only the glyphs you need, reducing file size for web deliver
 
 ### Text Layout
 
-Horizontal left-to-right text with kerning is fully supported. The unsupported features represent a full text shaping engine (like HarfBuzz), which is a separate domain:
+Horizontal LTR text with kerning and vertical top-to-bottom text are fully supported. The unsupported features represent a full text shaping engine (like HarfBuzz), which is a separate domain:
 
 | Feature | | Notes |
 |---------|:-:|-------|
