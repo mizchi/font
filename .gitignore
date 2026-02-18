@@ -1,5 +1,5 @@
 _build/
-target/
+target
 node_modules/
 .mooncakes/
 debug-output.svg
