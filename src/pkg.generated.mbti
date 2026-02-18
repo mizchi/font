@@ -50,6 +50,10 @@ pub fn parse_post(BinaryReader, Int, Int) -> PostTable
 
 pub fn parse_ttf(Bytes) -> TTFont?
 
+pub fn parse_vhea(BinaryReader, Int) -> (Int, Int, Int)
+
+pub fn parse_vmtx(BinaryReader, Int, Int, Int) -> (Array[Int], Array[Int])
+
 pub fn parse_woff1(Bytes) -> TTFont?
 
 pub fn parse_woff2(Bytes) -> TTFont?
@@ -198,6 +202,7 @@ pub(all) struct TTFont {
   name_records : Map[Int, String]
   os2 : OS2Table?
   post : PostTable?
+  vertical : VerticalMetrics?
 }
 pub fn TTFont::cap_height(Self) -> Int
 pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]
@@ -205,6 +210,7 @@ pub fn TTFont::char_outline_at(Self, Int, Map[String, Double]) -> Array[@svg.Pat
 pub fn TTFont::codepoint_coverage(Self) -> Array[Int]
 pub fn TTFont::font_name(Self, Int) -> String?
 pub fn TTFont::get_glyph(Self, Int) -> Glyph
+pub fn TTFont::glyph_ids(Self) -> Array[Int]
 pub fn TTFont::glyph_index(Self, Int) -> Int
 pub fn TTFont::glyph_metrics(Self, Int) -> GlyphMetrics
 pub fn TTFont::glyph_metrics_at(Self, Int, Map[String, Double]) -> GlyphMetrics
@@ -241,6 +247,13 @@ pub(all) struct VarRegionAxis {
   start_coord : Double
   peak_coord : Double
   end_coord : Double
+}
+
+pub(all) struct VerticalMetrics {
+  v_ascent : Int
+  v_descent : Int
+  advance_heights : Array[Int]
+  top_side_bearings : Array[Int]
 }
 
 // Type aliases

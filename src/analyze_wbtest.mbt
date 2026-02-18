@@ -57,3 +57,21 @@ test "analyze/too_small" {
   let data = Bytes::makei(4, fn(_i) { b'\x00' })
   assert_true(analyze_tables(data) is None)
 }
+
+///|
+test "analyze/glyph_ids" {
+  let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
+  guard parse_font(data) is Some(font)
+  let ids = font.glyph_ids()
+  assert_eq(ids.length(), font.num_glyphs)
+  assert_eq(ids[0], 0)
+  assert_eq(ids[ids.length() - 1], font.num_glyphs - 1)
+}
+
+///|
+test "analyze/vertical_metrics_absent" {
+  // NotoSansMono is horizontal-only, should have no vertical metrics
+  let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
+  guard parse_font(data) is Some(font)
+  assert_true(font.vertical is None)
+}

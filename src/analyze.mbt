@@ -30,6 +30,12 @@ pub fn analyze_tables(data : Bytes) -> Array[TableInfo]? {
 }
 
 ///|
+/// Get all glyph IDs in the font (0 to num_glyphs-1)
+pub fn TTFont::glyph_ids(self : TTFont) -> Array[Int] {
+  Array::makei(self.num_glyphs, fn(i) { i })
+}
+
+///|
 /// Get all codepoints covered by the font's cmap
 pub fn TTFont::codepoint_coverage(self : TTFont) -> Array[Int] {
   let cps : Array[Int] = []

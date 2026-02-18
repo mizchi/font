@@ -43,6 +43,7 @@ pub(all) struct TTFont {
   name_records : Map[Int, String]
   os2 : OS2Table?
   post : PostTable?
+  vertical : VerticalMetrics?
 }
 
 ///|
@@ -122,6 +123,14 @@ pub(all) struct OS2Table {
   us_win_descent : Int
   sx_height : Int
   s_cap_height : Int
+}
+
+///|
+pub(all) struct VerticalMetrics {
+  v_ascent : Int
+  v_descent : Int
+  advance_heights : Array[Int]
+  top_side_bearings : Array[Int]
 }
 
 ///|

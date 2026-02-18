@@ -176,6 +176,27 @@ pub fn codepointCoverage() -> String {
 }
 
 ///|
+/// Get all glyph IDs as JSON array
+pub fn glyphIds() -> String {
+  match global_font.val {
+    Some(font) => {
+      let ids = font.glyph_ids()
+      let buf = StringBuilder::new()
+      buf.write_char('[')
+      for i, id in ids {
+        if i > 0 {
+          buf.write_char(',')
+        }
+        buf.write_string(id.to_string())
+      }
+      buf.write_char(']')
+      buf.to_string()
+    }
+    None => "[]"
+  }
+}
+
+///|
 /// Get table sizes as JSON object
 pub fn tableSizes() -> String {
   match global_font.val {

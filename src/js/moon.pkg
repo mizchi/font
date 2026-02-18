@@ -18,6 +18,7 @@ options(
         "fontWeightClass",
         "isFixedPitch",
         "codepointCoverage",
+        "glyphIds",
         "tableSizes",
       ],
       "format": "esm",

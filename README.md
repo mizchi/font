@@ -52,7 +52,7 @@ This library covers the core OpenType tables needed for **glyph rendering, metri
 | `maxp` | numGlyphs |
 | `hhea` | ascent, descent, lineGap, numOfLongHorMetrics |
 | `hmtx` | advanceWidth, leftSideBearing per glyph |
-| `cmap` | Format 4 (BMP) + Format 12 (full Unicode) |
+| `cmap` | Format 0, 4 (BMP), 6, and 12 (full Unicode) |
 | `loca` | Short and long formats |
 | `glyf` | Simple and compound glyphs |
 | `CFF ` | Type 2 charstrings with subroutines |
@@ -64,6 +64,7 @@ This library covers the core OpenType tables needed for **glyph rendering, metri
 | `name` | Windows Unicode, Unicode platform, Mac Roman |
 | `OS/2` | Weight/width class, PANOSE, x-height, cap-height |
 | `post` | Italic angle, fixed pitch, glyph names (v2.0) |
+| `vhea`/`vmtx` | Vertical metrics — advance heights and top side bearings |
 
 #### ❌ Not Parsed
 
@@ -102,7 +103,6 @@ The tables below are **not** parsed. Most of them are only needed for advanced u
 
 | Table | Description |
 |-------|-------------|
-| `vhea`/`vmtx` | Vertical metrics — advance heights and top side bearings |
 | `VORG` | Vertical origin — CFF vertical glyph origin positions |
 
 **🍎 Apple AAT** — Apple-proprietary layout system. Most modern fonts use OpenType (GSUB/GPOS) instead. Only found in macOS system fonts and some legacy fonts.
@@ -156,11 +156,11 @@ Format 4 + 12 cover virtually all modern fonts. The unsupported formats are lega
 
 | Format | | Coverage |
 |--------|:-:|----------|
+| Format 0 | ✅ | Mac Roman 256-char |
 | Format 4 | ✅ | BMP (U+0000–U+FFFF) |
+| Format 6 | ✅ | Trimmed table |
 | Format 12 | ✅ | Full Unicode (preferred when available) |
-| Format 0 | ❌ | Mac Roman 256-char — legacy, rarely seen in modern fonts |
 | Format 2 | ❌ | CJK mixed 8/16-bit — obsolete encoding, replaced by Format 12 |
-| Format 6 | ❌ | Trimmed table — rarely used, covered by Format 4 |
 | Format 14 | ❌ | Unicode Variation Sequences — needed for CJK glyph variants (e.g. JP vs CN forms) |
 
 ### Kerning
@@ -206,7 +206,7 @@ Horizontal left-to-right text with kerning is fully supported. The unsupported f
 
 ### JS Bindings (Wasm)
 
-12 exported functions:
+13 exported functions:
 
 | Function | Returns | Description |
 |----------|---------|-------------|
@@ -221,6 +221,7 @@ Horizontal left-to-right text with kerning is fully supported. The unsupported f
 | `fontWeightClass()` | Int | OS/2 weight class |
 | `isFixedPitch()` | Int (0/1) | Post table fixed-pitch flag |
 | `codepointCoverage()` | JSON string | All supported codepoints |
+| `glyphIds()` | JSON string | All glyph IDs (0 to numGlyphs-1) |
 | `tableSizes()` | JSON string | Table tag to byte size |
 
 ## Dependencies

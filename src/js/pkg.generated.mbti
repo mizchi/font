@@ -12,6 +12,8 @@ pub fn getFontInfo() -> String
 
 pub fn glyphAdvance(Int, Double) -> Double
 
+pub fn glyphIds() -> String
+
 pub fn glyphToSvgPath(Int, Double) -> String
 
 pub fn isFixedPitch() -> Int

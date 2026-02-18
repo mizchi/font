@@ -80,6 +80,23 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     Some(name_rec) => parse_name(reader, name_rec.offset)
     None => {}
   }
+  let vertical : VerticalMetrics? = match
+    (tables.get("vhea"), tables.get("vmtx")) {
+    (Some(vhea_rec), Some(vmtx_rec)) => {
+      let (v_ascent, v_descent, num_v_metrics) = parse_vhea(
+        reader,
+        vhea_rec.offset,
+      )
+      let (advance_heights, top_side_bearings) = parse_vmtx(
+        reader,
+        vmtx_rec.offset,
+        num_glyphs,
+        num_v_metrics,
+      )
+      Some({ v_ascent, v_descent, advance_heights, top_side_bearings })
+    }
+    _ => None
+  }
   let os2 : OS2Table? = tables
     .get("OS/2")
     .map(fn(os2_rec) { parse_os2(reader, os2_rec.offset) })
@@ -121,6 +138,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
       name_records,
       os2,
       post,
+      vertical,
     })
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
@@ -147,6 +165,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         name_records,
         os2,
         post,
+        vertical,
       }
     })
   } else if has_cff2 {
@@ -174,6 +193,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         name_records,
         os2,
         post,
+        vertical,
       }
     })
   } else {

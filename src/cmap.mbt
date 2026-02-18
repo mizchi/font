@@ -40,6 +40,25 @@ pub fn parse_cmap(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
     let format = reader.read_uint16()
     if format == 4 {
       parse_cmap_format4(reader, format4_offset, result)
+      return result
+    }
+  }
+  // Fallback: scan for Format 0 or Format 6
+  for i = 0; i < num_tables; i = i + 1 {
+    reader.seek(offset + 4 + i * 8)
+    let _pid = reader.read_uint16()
+    let _eid = reader.read_uint16()
+    let sub_offset = reader.read_uint32()
+    let abs_offset = offset + sub_offset
+    reader.seek(abs_offset)
+    let format = reader.read_uint16()
+    if format == 0 && result.is_empty() {
+      parse_cmap_format0(reader, abs_offset, result)
+      return result
+    }
+    if format == 6 && result.is_empty() {
+      parse_cmap_format6(reader, abs_offset, result)
+      return result
     }
   }
   result
@@ -131,6 +150,42 @@ fn parse_cmap_format4(
           result[cp] = glyph_id
         }
       }
+    }
+  }
+}
+
+///|
+/// Format 0: 256-byte mapping table (Mac Roman)
+fn parse_cmap_format0(
+  reader : BinaryReader,
+  subtable_offset : Int,
+  result : Map[Int, Int],
+) -> Unit {
+  // format(u16=0) + length(u16) + language(u16) + glyphIdArray[256]
+  reader.seek(subtable_offset + 6) // skip format + length + language
+  for cp = 0; cp < 256; cp = cp + 1 {
+    let gid = reader.read_uint8()
+    if gid != 0 {
+      result[cp] = gid
+    }
+  }
+}
+
+///|
+/// Format 6: trimmed table mapping
+fn parse_cmap_format6(
+  reader : BinaryReader,
+  subtable_offset : Int,
+  result : Map[Int, Int],
+) -> Unit {
+  // format(u16=6) + length(u16) + language(u16) + firstCode(u16) + entryCount(u16) + glyphIdArray
+  reader.seek(subtable_offset + 6) // skip format + length + language
+  let first_code = reader.read_uint16()
+  let entry_count = reader.read_uint16()
+  for i = 0; i < entry_count; i = i + 1 {
+    let gid = reader.read_uint16()
+    if gid != 0 {
+      result[first_code + i] = gid
     }
   }
 }
