@@ -1,6 +1,6 @@
 {
   "name": "mizchi/font",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "deps": {
     "mizchi/svg": "0.1.8",
     "mizchi/pixelmatch": "0.3.5",
@@ -12,8 +12,11 @@
   "license": "Apache-2.0",
   "keywords": [
     "font",
-    "ttf"
+    "ttf",
+    "woff",
+    "woff2",
+    "opentype"
   ],
-  "description": "TrueType/WOFF font parser",
+  "description": "TrueType/WOFF/WOFF2 font parser for MoonBit",
   "source": "src"
 }
