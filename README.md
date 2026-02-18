@@ -32,148 +32,130 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 
 ### Font Formats
 
-| Format | Status | Notes |
-|--------|--------|-------|
-| TTF (TrueType) | Supported | sfnt flavor `0x00010000` and `0x74727565` |
-| OTF (OpenType/CFF) | Supported | sfnt flavor `OTTO` |
-| WOFF1 | Supported | zlib decompression |
-| WOFF2 | Supported | Brotli decompression with glyf/loca/hmtx transforms |
-| TTC/OTC (Font Collections) | Supported | Index-based or first-font access |
+| Format | | Notes |
+|--------|:-:|-------|
+| TTF (TrueType) | ✅ | sfnt flavor `0x00010000` and `0x74727565` |
+| OTF (OpenType/CFF) | ✅ | sfnt flavor `OTTO` |
+| WOFF1 | ✅ | zlib decompression |
+| WOFF2 | ✅ | Brotli decompression with glyf/loca/hmtx transforms |
+| TTC/OTC (Font Collections) | ✅ | Index-based or first-font access |
 
 ### OpenType Tables
 
-#### Parsed Tables
-
-| Table | Description | Details |
-|-------|-------------|---------|
-| `head` | Font header | units_per_em, indexToLocFormat |
-| `maxp` | Maximum profile | numGlyphs |
-| `hhea` | Horizontal header | ascent, descent, lineGap, numOfLongHorMetrics |
-| `hmtx` | Horizontal metrics | advanceWidth, leftSideBearing per glyph |
-| `cmap` | Character mapping | Format 4 (BMP), Format 12 (full Unicode) |
-| `loca` | Glyph locations | Short and long formats |
-| `glyf` | Glyph outlines | Simple and compound glyphs |
-| `CFF ` | CFF1 outlines | Type 2 charstrings with subroutines |
-| `CFF2` | CFF2 outlines | Variable font support with blend/vsindex |
-| `fvar` | Font variations | Axis definitions (wght, wdth, opsz, etc.) |
-| `avar` | Axis variations | Piecewise linear axis value mapping |
-| `gvar` | Glyph variations | TrueType delta interpolation with IUP |
-| `kern` | Kerning | Format 0 horizontal pairs |
-| `name` | Naming | Windows Unicode, Unicode platform, Mac Roman |
-| `OS/2` | OS/2 metrics | Weight class, width class, PANOSE, x-height, cap-height |
-| `post` | PostScript | Italic angle, fixed pitch, glyph names (v2.0) |
-
-#### Not Parsed
-
-| Table | Description | Notes |
-|-------|-------------|-------|
-| `GSUB` | Glyph substitution | Ligatures, contextual alternates, etc. |
-| `GPOS` | Glyph positioning | Pair adjustment, mark attachment, etc. |
-| `GDEF` | Glyph definition | Glyph classes, mark attachment |
-| `BASE` | Baseline | Baseline alignment data |
-| `MATH` | Math typesetting | Math layout constants and glyph assembly |
-| `COLR`/`CPAL` | Color fonts | Color layers and palettes |
-| `SVG ` | SVG outlines | SVG glyph documents |
-| `CBDT`/`CBLC` | Color bitmaps | Emoji bitmaps |
-| `sbix` | Apple bitmaps | Apple-style bitmap glyphs |
-| `EBDT`/`EBLC` | Embedded bitmaps | Monochrome/grayscale bitmaps |
-| `DSIG` | Digital signature | Font signing |
-| `JSTF` | Justification | Justification alternatives |
-| `morx`/`mort` | Apple AAT | Apple Advanced Typography |
-| `cvt`/`fpgm`/`prep` | Hinting | TrueType instruction programs |
-| `gasp` | Grid-fitting | Grid-fitting and scan conversion |
-| `hdmx` | Horizontal device metrics | Pre-computed widths |
-| `vhea`/`vmtx` | Vertical metrics | Vertical layout metrics |
-| `VORG` | Vertical origin | CFF vertical origin |
-| `cvar` | CVT variation | Variation of CVT values |
+| Table | | Description |
+|-------|:-:|-------------|
+| `head` | ✅ | units_per_em, indexToLocFormat |
+| `maxp` | ✅ | numGlyphs |
+| `hhea` | ✅ | ascent, descent, lineGap, numOfLongHorMetrics |
+| `hmtx` | ✅ | advanceWidth, leftSideBearing per glyph |
+| `cmap` | ✅ | Format 4 (BMP) + Format 12 (full Unicode) |
+| `loca` | ✅ | Short and long formats |
+| `glyf` | ✅ | Simple and compound glyphs |
+| `CFF ` | ✅ | Type 2 charstrings with subroutines |
+| `CFF2` | ✅ | Variable font support with blend/vsindex |
+| `fvar` | ✅ | Axis definitions (wght, wdth, opsz, etc.) |
+| `avar` | ✅ | Piecewise linear axis value mapping |
+| `gvar` | ✅ | TrueType delta interpolation with IUP |
+| `kern` | ✅ | Format 0 horizontal pairs |
+| `name` | ✅ | Windows Unicode, Unicode platform, Mac Roman |
+| `OS/2` | ✅ | Weight/width class, PANOSE, x-height, cap-height |
+| `post` | ✅ | Italic angle, fixed pitch, glyph names (v2.0) |
+| `GSUB` | ❌ | Glyph substitution (ligatures, alternates) |
+| `GPOS` | ❌ | Glyph positioning (pair adjustment, marks) |
+| `GDEF` | ❌ | Glyph definition (classes, mark attachment) |
+| `BASE` | ❌ | Baseline alignment data |
+| `MATH` | ❌ | Math layout constants and glyph assembly |
+| `COLR`/`CPAL` | ❌ | Color font layers and palettes |
+| `SVG ` | ❌ | SVG glyph documents |
+| `CBDT`/`CBLC` | ❌ | Color bitmap glyphs (emoji) |
+| `sbix` | ❌ | Apple-style bitmap glyphs |
+| `EBDT`/`EBLC` | ❌ | Monochrome/grayscale bitmaps |
+| `DSIG` | ❌ | Digital signature |
+| `JSTF` | ❌ | Justification alternatives |
+| `morx`/`mort` | ❌ | Apple Advanced Typography |
+| `cvt`/`fpgm`/`prep` | ❌ | TrueType hinting programs |
+| `vhea`/`vmtx` | ❌ | Vertical layout metrics |
+| `cvar` | ❌ | CVT variation |
 
 ### CFF / CFF2 Charstring Operators
 
-#### Supported
-
-| Category | Operators |
-|----------|-----------|
-| Move | `rmoveto`, `hmoveto`, `vmoveto` |
-| Line | `rlineto`, `hlineto`, `vlineto` |
-| Curve | `rrcurveto`, `hhcurveto`, `vvcurveto`, `hvcurveto`, `vhcurveto` |
-| Mixed | `rcurveline`, `rlinecurve` |
-| Flex | `flex`, `hflex`, `vflex`, `hflex1`, `flex1` |
-| Hint | `hstem`, `vstem`, `hstemhm`, `vstemhm`, `hintmask`, `cntrmask` |
-| Subroutine | `callsubr`, `callgsubr`, `return` |
-| Arithmetic | `add`, `sub`, `mul`, `div`, `neg`, `abs`, `sqrt`, `eq` |
-| Logic | `and`, `or`, `not`, `ifelse` |
-| Stack | `dup`, `exch`, `drop`, `index`, `roll`, `put`, `get` |
-| CFF2 | `blend`, `vsindex` |
-| Control | `endchar` |
-
-#### Not Supported
-
-| Operator | Notes |
-|----------|-------|
-| `seac` | Deprecated accent composition |
-| `dotsection` | Deprecated hint operator |
+| Category | | Operators |
+|----------|:-:|-----------|
+| Move | ✅ | `rmoveto`, `hmoveto`, `vmoveto` |
+| Line | ✅ | `rlineto`, `hlineto`, `vlineto` |
+| Curve | ✅ | `rrcurveto`, `hhcurveto`, `vvcurveto`, `hvcurveto`, `vhcurveto` |
+| Mixed | ✅ | `rcurveline`, `rlinecurve` |
+| Flex | ✅ | `flex`, `hflex`, `vflex`, `hflex1`, `flex1` |
+| Hint | ✅ | `hstem`, `vstem`, `hstemhm`, `vstemhm`, `hintmask`, `cntrmask` |
+| Subroutine | ✅ | `callsubr`, `callgsubr`, `return` |
+| Arithmetic | ✅ | `add`, `sub`, `mul`, `div`, `neg`, `abs`, `sqrt`, `eq` |
+| Logic | ✅ | `and`, `or`, `not`, `ifelse` |
+| Stack | ✅ | `dup`, `exch`, `drop`, `index`, `roll`, `put`, `get` |
+| CFF2 Variation | ✅ | `blend`, `vsindex` |
+| Control | ✅ | `endchar` |
+| Deprecated | ➖ | `seac` (accent composition), `dotsection` |
 
 ### Glyph Outlines
 
-| Feature | Status |
-|---------|--------|
-| Simple glyphs (TrueType) | Supported |
-| Compound glyphs (TrueType) | Supported — component transforms (scale, 2x2 matrix, XY offset) |
-| CFF1 charstrings | Supported — local/global subroutines |
-| CFF2 charstrings | Supported — blend interpolation |
-| TrueType variations (gvar) | Supported — shared tuples, IUP, delta unpacking |
-| CFF2 variations (ItemVariationStore) | Supported — region scalars, blend deltas |
-| Hinting / instruction execution | Not supported — instructions are skipped |
+| Feature | | Notes |
+|---------|:-:|-------|
+| Simple glyphs (TrueType) | ✅ | |
+| Compound glyphs (TrueType) | ✅ | Scale, 2x2 matrix, XY offset transforms |
+| CFF1 charstrings | ✅ | Local/global subroutines |
+| CFF2 charstrings | ✅ | Blend interpolation |
+| TrueType variations (gvar) | ✅ | Shared tuples, IUP, delta unpacking |
+| CFF2 variations (ItemVariationStore) | ✅ | Region scalars, blend deltas |
+| Hinting / instruction execution | ❌ | Instructions are preserved but not executed |
 
 ### cmap Formats
 
-| Format | Status | Coverage |
-|--------|--------|----------|
-| Format 4 | Supported | BMP (U+0000–U+FFFF) |
-| Format 12 | Supported | Full Unicode (preferred over Format 4) |
-| Format 0 | Not supported | Mac Roman 256-char mapping |
-| Format 2 | Not supported | CJK mixed 8/16-bit encoding |
-| Format 6 | Not supported | Trimmed table mapping |
-| Format 14 | Not supported | Unicode Variation Sequences (UVS) |
+| Format | | Coverage |
+|--------|:-:|----------|
+| Format 4 | ✅ | BMP (U+0000–U+FFFF) |
+| Format 12 | ✅ | Full Unicode (preferred when available) |
+| Format 0 | ❌ | Mac Roman 256-char mapping |
+| Format 2 | ❌ | CJK mixed 8/16-bit encoding |
+| Format 6 | ❌ | Trimmed table mapping |
+| Format 14 | ❌ | Unicode Variation Sequences (UVS) |
 
 ### Kerning
 
-| Feature | Status |
-|---------|--------|
-| `kern` table Format 0 (flat pairs) | Supported |
-| `kern` table Format 1 (Apple state machine) | Not supported |
-| `GPOS` pair adjustment (PairPos) | Not supported |
-| `GPOS` contextual kerning | Not supported |
+| Feature | | Notes |
+|---------|:-:|-------|
+| `kern` table Format 0 (flat pairs) | ✅ | |
+| `kern` table Format 1 (Apple state machine) | ❌ | |
+| `GPOS` pair adjustment (PairPos) | ❌ | |
+| `GPOS` contextual kerning | ❌ | |
 
 ### Font Subsetting
 
-| Feature | Status |
-|---------|--------|
-| Glyf-based TrueType subsetting | Supported |
-| Compound glyph dependency resolution | Supported |
-| Glyph ID remapping | Supported |
-| cmap Format 12 rebuild | Supported |
-| Table copy (head, hhea, hmtx, maxp, name, OS/2, post) | Supported |
-| CFF/CFF2 subsetting | Not supported |
-| WOFF/WOFF2 output | Not supported — outputs raw sfnt (TTF) |
-| Layout table subsetting (GSUB/GPOS) | Not supported |
+| Feature | | Notes |
+|---------|:-:|-------|
+| Glyf-based TrueType subsetting | ✅ | |
+| Compound glyph dependency resolution | ✅ | |
+| Glyph ID remapping | ✅ | |
+| cmap Format 12 rebuild | ✅ | |
+| Table copy (head, hhea, hmtx, maxp, name, OS/2, post) | ✅ | |
+| CFF/CFF2 subsetting | ❌ | |
+| WOFF/WOFF2 output | ❌ | Outputs raw sfnt (TTF) |
+| Layout table subsetting (GSUB/GPOS) | ❌ | |
 
 ### Text Layout
 
-| Feature | Status |
-|---------|--------|
-| Horizontal advance widths | Supported |
-| Pair kerning (`kern` table) | Supported |
-| UTF-16 surrogate pair handling | Supported |
-| Text width measurement | Supported |
-| OpenType layout (GSUB/GPOS shaping) | Not supported |
-| Bidirectional text | Not supported |
-| Vertical layout | Not supported |
-| Line breaking | Not supported |
+| Feature | | Notes |
+|---------|:-:|-------|
+| Horizontal advance widths | ✅ | |
+| Pair kerning (`kern` table) | ✅ | |
+| UTF-16 surrogate pair handling | ✅ | |
+| Text width measurement | ✅ | |
+| OpenType shaping (GSUB/GPOS) | ❌ | |
+| Bidirectional text | ❌ | |
+| Vertical layout | ❌ | |
+| Line breaking | ❌ | |
 
-### JS Bindings
+### JS Bindings (Wasm)
 
-12 exported functions for the JavaScript/Wasm target:
+12 exported functions:
 
 | Function | Returns | Description |
 |----------|---------|-------------|
@@ -188,7 +170,7 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 | `fontWeightClass()` | Int | OS/2 weight class |
 | `isFixedPitch()` | Int (0/1) | Post table fixed-pitch flag |
 | `codepointCoverage()` | JSON string | All supported codepoints |
-| `tableSizes()` | JSON string | Table tag → byte size |
+| `tableSizes()` | JSON string | Table tag to byte size |
 
 ## Dependencies
 
