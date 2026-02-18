@@ -9,7 +9,7 @@ pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
   if font.cff is Some(_) {
     return None
   }
-  if font.loca.length() == 0 {
+  if font.loca.is_empty() {
     return None
   }
   let reader = BinaryReader::new(data)
@@ -212,10 +212,7 @@ fn rewrite_compound_glyph(glyph_data : Bytes, gid_map : Map[Int, Int]) -> Bytes 
     let flags = (glyph_data[pos].to_int() << 8) | glyph_data[pos + 1].to_int()
     let old_gid = (glyph_data[pos + 2].to_int() << 8) |
       glyph_data[pos + 3].to_int()
-    let new_gid = match gid_map.get(old_gid) {
-      Some(n) => n
-      None => 0
-    }
+    let new_gid = gid_map.get(old_gid).unwrap_or(0)
     // Write new glyph ID
     out[pos + 2] = ((new_gid >> 8) & 0xFF).to_byte()
     out[pos + 3] = (new_gid & 0xFF).to_byte()

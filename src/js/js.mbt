@@ -77,11 +77,7 @@ pub fn glyphAdvance(codepoint : Int, font_size : Double) -> Double {
 /// Get font name by nameID
 pub fn fontName(name_id : Int) -> String {
   match global_font.val {
-    Some(font) =>
-      match font.font_name(name_id) {
-        Some(s) => s
-        None => ""
-      }
+    Some(font) => font.font_name(name_id).unwrap_or("")
     None => ""
   }
 }

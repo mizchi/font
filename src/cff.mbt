@@ -156,13 +156,15 @@ fn parse_cff_table(data : Bytes, cff_offset : Int) -> CFFData? {
   if private_size > 0 {
     let priv_abs_offset = cff_offset + private_offset
     let priv_dict = parse_cff_dict(data, priv_abs_offset, private_size)
-    match priv_dict.get(20) {
-      Some(ops) => if ops.length() > 0 { default_width_x = ops[0] }
-      None => ()
+    if priv_dict.get(20) is Some(ops) {
+      if ops.length() > 0 {
+        default_width_x = ops[0]
+      }
     }
-    match priv_dict.get(21) {
-      Some(ops) => if ops.length() > 0 { nominal_width_x = ops[0] }
-      None => ()
+    if priv_dict.get(21) is Some(ops) {
+      if ops.length() > 0 {
+        nominal_width_x = ops[0]
+      }
     }
     match priv_dict.get(19) {
       Some(ops) =>
@@ -367,53 +369,39 @@ fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
   let charstrings = parse_cff2_index(cs_reader)
   // FDArray from TopDICT op 1236
   let mut local_subrs : CFFIndex = { data_offset: 0, offsets: [0] }
-  match top_dict.get(1236) {
-    Some(ops) =>
-      if ops.length() > 0 {
-        let fd_offset = cff2_offset + ops[0]
-        let fd_reader = BinaryReader::at(data, fd_offset)
-        let fd_index = parse_cff2_index(fd_reader)
-        if fd_index.count() > 0 {
-          // Parse first Font DICT entry
-          let (fd_entry_offset, fd_entry_length) = fd_index.entry(0)
-          let font_dict = parse_cff_dict(data, fd_entry_offset, fd_entry_length)
-          // Private DICT from Font DICT op 18
-          match font_dict.get(18) {
-            Some(priv_ops) =>
-              if priv_ops.length() >= 2 {
-                let priv_size = priv_ops[0]
-                let priv_offset = cff2_offset + priv_ops[1]
-                if priv_size > 0 {
-                  let priv_dict = parse_cff_dict(data, priv_offset, priv_size)
-                  // Local Subr INDEX from Private DICT op 19
-                  match priv_dict.get(19) {
-                    Some(subr_ops) =>
-                      if subr_ops.length() > 0 {
-                        let subr_offset = priv_offset + subr_ops[0]
-                        let subr_reader = BinaryReader::at(data, subr_offset)
-                        local_subrs = parse_cff2_index(subr_reader)
-                      }
-                    None => ()
-                  }
-                }
-              }
-            None => ()
+  if top_dict.get(1236) is Some(ops) && ops.length() > 0 {
+    let fd_offset = cff2_offset + ops[0]
+    let fd_reader = BinaryReader::at(data, fd_offset)
+    let fd_index = parse_cff2_index(fd_reader)
+    if fd_index.count() > 0 {
+      let (fd_entry_offset, fd_entry_length) = fd_index.entry(0)
+      let font_dict = parse_cff_dict(data, fd_entry_offset, fd_entry_length)
+      if font_dict.get(18) is Some(priv_ops) && priv_ops.length() >= 2 {
+        let priv_size = priv_ops[0]
+        let priv_offset = cff2_offset + priv_ops[1]
+        if priv_size > 0 {
+          let priv_dict = parse_cff_dict(data, priv_offset, priv_size)
+          if priv_dict.get(19) is Some(subr_ops) && subr_ops.length() > 0 {
+            let subr_offset = priv_offset + subr_ops[0]
+            let subr_reader = BinaryReader::at(data, subr_offset)
+            local_subrs = parse_cff2_index(subr_reader)
           }
         }
       }
-    None => ()
+    }
   }
   // ItemVariationStore from TopDICT op 24
-  let ivs : ItemVariationStore? = match top_dict.get(24) {
-    Some(ops) =>
+  let ivs : ItemVariationStore? = top_dict
+    .get(24)
+    .map(fn(ops) {
       if ops.length() > 0 {
         let ivs_offset = cff2_offset + ops[0]
         Some(parse_item_variation_store(data, ivs_offset))
       } else {
         None
       }
-    None => None
-  }
+    })
+    .bind(fn(x) { x })
   Some({
     charstrings,
     global_subrs,
@@ -696,25 +684,9 @@ fn exec_operator(
       // vsindex (CFF2): set variation index and recompute scalars
       if state.is_cff2 && stack.length() > 0 {
         state.vsindex = stack.unsafe_pop().to_int()
-        match cff.ivs {
-          Some(ivs) =>
-            match state.scalars {
-              Some(old_scalars) => {
-                // Recompute scalars with new vsindex using existing coords
-                // Extract coords from the old scalars' region structure
-                let new_scalars = precompute_scalars(
-                  ivs,
-                  state.vsindex,
-                  // Use zero coords as fallback; in practice vsindex changes
-                  // only affect region selection, not coordinate values
-                  [],
-                )
-                let _ = old_scalars
-                state.scalars = Some(new_scalars)
-              }
-              None => ()
-            }
-          None => ()
+        if cff.ivs is Some(ivs) && state.scalars is Some(_) {
+          let new_scalars = precompute_scalars(ivs, state.vsindex, [])
+          state.scalars = Some(new_scalars)
         }
       }
     16 =>

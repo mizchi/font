@@ -116,7 +116,7 @@ fn contours_to_path_commands(
 ) -> Array[@svg.PathCommand] {
   let commands : Array[@svg.PathCommand] = []
   for contour in contours {
-    if contour.length() == 0 {
+    if contour.is_empty() {
       continue
     }
     contour_to_path(contour, commands)

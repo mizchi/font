@@ -125,7 +125,7 @@ fn iup_contour(
       touched.push(i)
     }
   }
-  if touched.length() == 0 {
+  if touched.is_empty() {
     return
   }
   if touched.length() == 1 {
@@ -273,7 +273,7 @@ fn apply_gvar_deltas(
     } else {
       shared_points
     }
-    let is_all_points = points.length() == 0
+    let is_all_points = points.is_empty()
     let n_deltas = if is_all_points { num_points } else { points.length() }
     // Read deltas (x then y)
     let dx = unpack_deltas(ser_reader, n_deltas)

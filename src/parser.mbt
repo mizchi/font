@@ -80,14 +80,12 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     Some(name_rec) => parse_name(reader, name_rec.offset)
     None => {}
   }
-  let os2 : OS2Table? = match tables.get("OS/2") {
-    Some(os2_rec) => Some(parse_os2(reader, os2_rec.offset))
-    None => None
-  }
-  let post : PostTable? = match tables.get("post") {
-    Some(post_rec) => Some(parse_post(reader, post_rec.offset, num_glyphs))
-    None => None
-  }
+  let os2 : OS2Table? = tables
+    .get("OS/2")
+    .map(fn(os2_rec) { parse_os2(reader, os2_rec.offset) })
+  let post : PostTable? = tables
+    .get("post")
+    .map(fn(post_rec) { parse_post(reader, post_rec.offset, num_glyphs) })
   if has_glyf {
     guard tables.get("loca") is Some(loca_rec) else { return None }
     guard tables.get("glyf") is Some(glyf_rec) else { return None }
@@ -97,10 +95,10 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
       num_glyphs,
       index_to_loc_format,
     )
-    let gvar_data : GvarData? = match tables.get("gvar") {
-      Some(gvar_rec) => parse_gvar(reader, gvar_rec.offset, num_glyphs)
-      None => None
-    }
+    let gvar_data : GvarData? = tables
+      .get("gvar")
+      .map(fn(gvar_rec) { parse_gvar(reader, gvar_rec.offset, num_glyphs) })
+      .bind(fn(x) { x })
     Some({
       units_per_em,
       index_to_loc_format,
@@ -126,64 +124,58 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     })
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
-    let cff_data = parse_cff_table(data, cff_rec.offset)
-    match cff_data {
-      Some(cff) =>
-        Some({
-          units_per_em,
-          index_to_loc_format,
-          num_glyphs,
-          ascent,
-          descent,
-          line_gap,
-          num_h_metrics,
-          glyf_offset: 0,
-          data,
-          cmap,
-          loca: [],
-          advance_widths,
-          left_side_bearings,
-          cff: Some(cff),
-          gvar: None,
-          var_axes,
-          kern_pairs,
-          avar_segments,
-          name_records,
-          os2,
-          post,
-        })
-      None => None
-    }
+    parse_cff_table(data, cff_rec.offset).map(fn(cff) {
+      {
+        units_per_em,
+        index_to_loc_format,
+        num_glyphs,
+        ascent,
+        descent,
+        line_gap,
+        num_h_metrics,
+        glyf_offset: 0,
+        data,
+        cmap,
+        loca: [],
+        advance_widths,
+        left_side_bearings,
+        cff: Some(cff),
+        gvar: None,
+        var_axes,
+        kern_pairs,
+        avar_segments,
+        name_records,
+        os2,
+        post,
+      }
+    })
   } else if has_cff2 {
     guard tables.get("CFF2") is Some(cff2_rec) else { return None }
-    let cff_data = parse_cff2_table(data, cff2_rec.offset)
-    match cff_data {
-      Some(cff) =>
-        Some({
-          units_per_em,
-          index_to_loc_format,
-          num_glyphs,
-          ascent,
-          descent,
-          line_gap,
-          num_h_metrics,
-          glyf_offset: 0,
-          data,
-          cmap,
-          loca: [],
-          advance_widths,
-          left_side_bearings,
-          cff: Some(cff),
-          gvar: None,
-          var_axes,
-          kern_pairs,
-          avar_segments,
-          name_records,
-          os2,
-          post,
-        })
-      None => None
-    }
+    parse_cff2_table(data, cff2_rec.offset).map(fn(cff) {
+      {
+        units_per_em,
+        index_to_loc_format,
+        num_glyphs,
+        ascent,
+        descent,
+        line_gap,
+        num_h_metrics,
+        glyf_offset: 0,
+        data,
+        cmap,
+        loca: [],
+        advance_widths,
+        left_side_bearings,
+        cff: Some(cff),
+        gvar: None,
+        var_axes,
+        kern_pairs,
+        avar_segments,
+        name_records,
+        os2,
+        post,
+      }
+    })
   } else {
     None
   }
@@ -197,10 +189,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
 
 ///|
 pub fn TTFont::glyph_index(self : TTFont, codepoint : Int) -> Int {
-  match self.cmap.get(codepoint) {
-    Some(id) => id
-    None => 0
-  }
+  self.cmap.get(codepoint).unwrap_or(0)
 }
 
 ///|
@@ -232,26 +221,29 @@ pub fn TTFont::glyph_metrics(self : TTFont, glyph_id : Int) -> GlyphMetrics {
   } else {
     0
   }
-  let bbox : GlyphBBox = if self.cff is Some(_) {
-    // CFF fonts: no glyf bbox available, return zero
-    { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
-  } else if glyph_id < self.num_glyphs && glyph_id < self.loca.length() - 1 {
-    let glyf_off = self.loca[glyph_id]
-    let next_off = self.loca[glyph_id + 1]
-    if glyf_off != next_off {
-      let offset = self.glyf_offset + glyf_off
-      let r = BinaryReader::at(self.data, offset)
-      let _num_contours = r.read_int16()
-      let x_min = r.read_int16()
-      let y_min = r.read_int16()
-      let x_max = r.read_int16()
-      let y_max = r.read_int16()
-      { x_min, y_min, x_max, y_max }
-    } else {
+  let bbox : GlyphBBox = match self.cff {
+    Some(_) =>
+      // CFF fonts: no glyf bbox available, return zero
       { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
-    }
-  } else {
-    { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+    None =>
+      if glyph_id < self.num_glyphs && glyph_id < self.loca.length() - 1 {
+        let glyf_off = self.loca[glyph_id]
+        let next_off = self.loca[glyph_id + 1]
+        if glyf_off != next_off {
+          let offset = self.glyf_offset + glyf_off
+          let r = BinaryReader::at(self.data, offset)
+          let _num_contours = r.read_int16()
+          let x_min = r.read_int16()
+          let y_min = r.read_int16()
+          let x_max = r.read_int16()
+          let y_max = r.read_int16()
+          { x_min, y_min, x_max, y_max }
+        } else {
+          { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+        }
+      } else {
+        { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+      }
   }
   { advance_width: advance, left_side_bearing: lsb, bbox }
 }
@@ -270,7 +262,7 @@ pub fn TTFont::glyph_outline_at(
   glyph_id : Int,
   axis_values : Map[String, Double],
 ) -> Array[@svg.PathCommand] {
-  if self.var_axes.length() == 0 {
+  if self.var_axes.is_empty() {
     return self.glyph_outline(glyph_id)
   }
   // Normalize coordinates with avar mapping
@@ -287,16 +279,9 @@ pub fn TTFont::glyph_outline_at(
     coords.push(coord)
   }
   // CFF2 variable font path
-  match self.cff {
-    Some(cff) =>
-      match cff.ivs {
-        Some(ivs) => {
-          let scalars = precompute_scalars(ivs, 0, coords)
-          return glyph_outline_by_id_var(self, glyph_id, scalars)
-        }
-        None => ()
-      }
-    None => ()
+  if self.cff is Some(cff) && cff.ivs is Some(ivs) {
+    let scalars = precompute_scalars(ivs, 0, coords)
+    return glyph_outline_by_id_var(self, glyph_id, scalars)
   }
   // glyf+gvar variable font path
   if self.gvar is Some(_) {
@@ -330,10 +315,7 @@ pub fn TTFont::scaled_outline(
 /// Get kerning value for a pair of glyph IDs
 pub fn TTFont::kern_pair(self : TTFont, left_gid : Int, right_gid : Int) -> Int {
   let key = (left_gid << 16) | right_gid
-  match self.kern_pairs.get(key) {
-    Some(v) => v
-    None => 0
-  }
+  self.kern_pairs.get(key).unwrap_or(0)
 }
 
 ///|
@@ -404,7 +386,7 @@ pub fn TTFont::glyph_name(self : TTFont, glyph_id : Int) -> String {
 ///|
 /// Apply avar segment mapping (piecewise linear interpolation)
 fn apply_avar(coord : Double, segment : Array[(Double, Double)]) -> Double {
-  if segment.length() == 0 {
+  if segment.is_empty() {
     return coord
   }
   // Below first point

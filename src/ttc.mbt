@@ -23,7 +23,7 @@ pub fn parse_font_collection(data : Bytes) -> Array[TTFont]? {
       None => ()
     }
   }
-  if fonts.length() == 0 {
+  if fonts.is_empty() {
     None
   } else {
     Some(fonts)
