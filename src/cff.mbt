@@ -180,6 +180,96 @@ fn parse_cff_table(data : Bytes, cff_offset : Int) -> CFFData? {
     local_subrs,
     default_width_x,
     nominal_width_x,
+    is_cff2: false,
+  })
+}
+
+///|
+/// Parse a CFF2 INDEX structure (count is uint32 instead of uint16)
+fn parse_cff2_index(reader : BinaryReader) -> CFFIndex {
+  let count = reader.read_uint32()
+  if count == 0 {
+    return { data_offset: reader.position(), offsets: [0] }
+  }
+  let off_size = reader.read_uint8()
+  let offsets = Array::new(capacity=count + 1)
+  for i = 0; i <= count; i = i + 1 {
+    let off = read_cff_offset(reader, off_size)
+    offsets.push(off - 1)
+    ignore(i)
+  }
+  let data_offset = reader.position()
+  let data_size = offsets[count]
+  reader.skip(data_size)
+  { data_offset, offsets }
+}
+
+///|
+/// Parse a CFF2 table
+fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
+  let reader = BinaryReader::at(data, cff2_offset)
+  let _major = reader.read_uint8() // 2
+  let _minor = reader.read_uint8() // 0
+  let hdr_size = reader.read_uint8()
+  let top_dict_length = reader.read_uint16()
+  // TopDICT starts at hdrSize, raw bytes (not INDEX)
+  reader.seek(cff2_offset + hdr_size)
+  let top_dict = parse_cff_dict(data, cff2_offset + hdr_size, top_dict_length)
+  // Global Subr INDEX follows TopDICT
+  reader.seek(cff2_offset + hdr_size + top_dict_length)
+  let global_subrs = parse_cff2_index(reader)
+  // CharStrings INDEX from TopDICT op 17
+  let charstrings_offset = match top_dict.get(17) {
+    Some(ops) => if ops.length() > 0 { ops[0] } else { return None }
+    None => return None
+  }
+  let cs_reader = BinaryReader::at(data, cff2_offset + charstrings_offset)
+  let charstrings = parse_cff2_index(cs_reader)
+  // FDArray from TopDICT op 1236
+  let mut local_subrs : CFFIndex = { data_offset: 0, offsets: [0] }
+  match top_dict.get(1236) {
+    Some(ops) =>
+      if ops.length() > 0 {
+        let fd_offset = cff2_offset + ops[0]
+        let fd_reader = BinaryReader::at(data, fd_offset)
+        let fd_index = parse_cff2_index(fd_reader)
+        if fd_index.count() > 0 {
+          // Parse first Font DICT entry
+          let (fd_entry_offset, fd_entry_length) = fd_index.entry(0)
+          let font_dict = parse_cff_dict(data, fd_entry_offset, fd_entry_length)
+          // Private DICT from Font DICT op 18
+          match font_dict.get(18) {
+            Some(priv_ops) =>
+              if priv_ops.length() >= 2 {
+                let priv_size = priv_ops[0]
+                let priv_offset = cff2_offset + priv_ops[1]
+                if priv_size > 0 {
+                  let priv_dict = parse_cff_dict(data, priv_offset, priv_size)
+                  // Local Subr INDEX from Private DICT op 19
+                  match priv_dict.get(19) {
+                    Some(subr_ops) =>
+                      if subr_ops.length() > 0 {
+                        let subr_offset = priv_offset + subr_ops[0]
+                        let subr_reader = BinaryReader::at(data, subr_offset)
+                        local_subrs = parse_cff2_index(subr_reader)
+                      }
+                    None => ()
+                  }
+                }
+              }
+            None => ()
+          }
+        }
+      }
+    None => ()
+  }
+  Some({
+    charstrings,
+    global_subrs,
+    local_subrs,
+    default_width_x: 0,
+    nominal_width_x: 0,
+    is_cff2: true,
   })
 }
 
@@ -203,6 +293,7 @@ priv struct CSState {
   mut num_stems : Int
   mut first_move : Bool
   mut ended : Bool
+  is_cff2 : Bool
   storage : FixedArray[Double] // put/get storage (32 slots, CFF spec)
 }
 
@@ -225,11 +316,16 @@ fn cff_glyph_outline(
     num_stems: 0,
     first_move: true,
     ended: false,
+    is_cff2: cff.is_cff2,
     storage: FixedArray::make(32, 0.0),
   }
   interpret_charstring(
     data, cs_offset, cs_length, cff, commands, stack, state, 0,
   )
+  // CFF2: endchar is optional; close path implicitly if not ended
+  if cff.is_cff2 && not(state.ended) && not(state.first_move) {
+    commands.push(@svg.ClosePath)
+  }
   commands
 }
 
@@ -283,7 +379,7 @@ fn interpret_charstring(
 ///|
 fn check_width(stack : Array[Double], state : CSState, expected : Int) -> Unit {
   if not(state.has_width) {
-    if stack.length() > expected {
+    if not(state.is_cff2) && stack.length() > expected {
       let _ = stack.remove(0)
     }
     state.has_width = true
@@ -397,6 +493,14 @@ fn exec_operator(
       let b1 = reader.read_uint8()
       exec_operator_12(b1, commands, stack, state)
     }
+    15 =>
+      // blend (CFF2): pop deltas, keep base values
+      // Stack: val1..valN d1_1..dN_k N
+      // Phase 1: no variation regions, so k=0 and nothing to pop beyond N
+      // For safety, just pop N and ignore (no deltas in default instance)
+      if stack.length() > 0 {
+        let _ = stack.unsafe_pop() // pop N
+      }
     14 => {
       // endchar
       check_width(stack, state, 0)

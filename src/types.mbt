@@ -51,6 +51,7 @@ pub(all) struct CFFData {
   local_subrs : CFFIndex
   default_width_x : Int
   nominal_width_x : Int
+  is_cff2 : Bool
 }
 
 ///|

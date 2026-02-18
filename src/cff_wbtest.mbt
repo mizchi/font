@@ -90,6 +90,7 @@ test "cff/charstring_endchar_only" {
     local_subrs: { data_offset: 0, offsets: [0] },
     default_width_x: 0,
     nominal_width_x: 0,
+    is_cff2: false,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
   inspect(cmds, content="[]")
@@ -110,6 +111,7 @@ test "cff/charstring_rmoveto_endchar" {
     local_subrs: { data_offset: 0, offsets: [0] },
     default_width_x: 0,
     nominal_width_x: 0,
+    is_cff2: false,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
   inspect(cmds, content="[MoveTo(100, 200), ClosePath]")
@@ -134,6 +136,7 @@ test "cff/charstring_simple_rect" {
     local_subrs: { data_offset: 0, offsets: [0] },
     default_width_x: 0,
     nominal_width_x: 0,
+    is_cff2: false,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
   inspect(
@@ -157,6 +160,7 @@ test "cff/charstring_rrcurveto" {
     local_subrs: { data_offset: 0, offsets: [0] },
     default_width_x: 0,
     nominal_width_x: 0,
+    is_cff2: false,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
   inspect(

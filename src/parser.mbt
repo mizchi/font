@@ -46,6 +46,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
   guard tables.get("cmap") is Some(cmap_rec) else { return None }
   let has_glyf = tables.get("glyf") is Some(_)
   let has_cff = tables.get("CFF ") is Some(_)
+  let has_cff2 = tables.get("CFF2") is Some(_)
   let (units_per_em, index_to_loc_format) = parse_head(reader, head_rec.offset)
   let num_glyphs = parse_maxp(reader, maxp_rec.offset)
   let (ascent, descent, line_gap, num_h_metrics) = parse_hhea(
@@ -87,6 +88,29 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
   } else if has_cff {
     guard tables.get("CFF ") is Some(cff_rec) else { return None }
     let cff_data = parse_cff_table(data, cff_rec.offset)
+    match cff_data {
+      Some(cff) =>
+        Some({
+          units_per_em,
+          index_to_loc_format,
+          num_glyphs,
+          ascent,
+          descent,
+          line_gap,
+          num_h_metrics,
+          glyf_offset: 0,
+          data,
+          cmap,
+          loca: [],
+          advance_widths,
+          left_side_bearings,
+          cff: Some(cff),
+        })
+      None => None
+    }
+  } else if has_cff2 {
+    guard tables.get("CFF2") is Some(cff2_rec) else { return None }
+    let cff_data = parse_cff2_table(data, cff2_rec.offset)
     match cff_data {
       Some(cff) =>
         Some({
