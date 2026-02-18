@@ -36,6 +36,7 @@ pub(all) struct TTFont {
   advance_widths : Array[Int]
   left_side_bearings : Array[Int]
   cff : CFFData?
+  gvar : GvarData?
   var_axes : Array[VarAxis]
 }
 
@@ -86,6 +87,15 @@ pub(all) struct CFFData {
   nominal_width_x : Int
   is_cff2 : Bool
   ivs : ItemVariationStore?
+}
+
+///|
+pub(all) struct GvarData {
+  axis_count : Int
+  shared_tuples : Array[Array[Double]]
+  gvar_offset : Int
+  glyph_var_data_offset : Int
+  glyph_offsets : Array[Int]
 }
 
 ///|

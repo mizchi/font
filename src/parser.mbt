@@ -15,6 +15,9 @@ pub fn parse_font(data : Bytes) -> TTFont? {
   } else if magic == 0x774F4632 {
     // wOF2 (WOFF2)
     parse_woff2(data)
+  } else if magic == 0x74746366 {
+    // ttcf (TTC/OTC font collection) — return first font
+    parse_font_at(data, 0)
   } else {
     // 0x00010000 (TrueType), 0x4F54544F (OTTO/CFF), 0x74727565 (true)
     parse_ttf(data)
@@ -22,9 +25,9 @@ pub fn parse_font(data : Bytes) -> TTFont? {
 }
 
 ///|
-/// Parse a TrueType/OpenType font from raw bytes
-pub fn parse_ttf(data : Bytes) -> TTFont? {
-  let reader = BinaryReader::new(data)
+/// Parse a TrueType/OpenType font from raw bytes starting at a given offset
+fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
+  let reader = BinaryReader::at(data, base_offset)
   let _sfnt_version = reader.read_uint32()
   let num_tables = reader.read_uint16()
   let _search_range = reader.read_uint16()
@@ -73,6 +76,10 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
       num_glyphs,
       index_to_loc_format,
     )
+    let gvar_data : GvarData? = match tables.get("gvar") {
+      Some(gvar_rec) => parse_gvar(reader, gvar_rec.offset, num_glyphs)
+      None => None
+    }
     Some({
       units_per_em,
       index_to_loc_format,
@@ -88,6 +95,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
       advance_widths,
       left_side_bearings,
       cff: None,
+      gvar: gvar_data,
       var_axes,
     })
   } else if has_cff {
@@ -110,6 +118,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
           advance_widths,
           left_side_bearings,
           cff: Some(cff),
+          gvar: None,
           var_axes,
         })
       None => None
@@ -134,6 +143,7 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
           advance_widths,
           left_side_bearings,
           cff: Some(cff),
+          gvar: None,
           var_axes,
         })
       None => None
@@ -141,6 +151,12 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
   } else {
     None
   }
+}
+
+///|
+/// Parse a TrueType/OpenType font from raw bytes
+pub fn parse_ttf(data : Bytes) -> TTFont? {
+  parse_ttf_at_offset(data, 0)
 }
 
 ///|
@@ -221,8 +237,6 @@ pub fn TTFont::glyph_outline_at(
   if self.var_axes.length() == 0 {
     return self.glyph_outline(glyph_id)
   }
-  guard self.cff is Some(cff) else { return self.glyph_outline(glyph_id) }
-  guard cff.ivs is Some(ivs) else { return self.glyph_outline(glyph_id) }
   // Normalize coordinates
   let coords : Array[Double] = []
   for axis in self.var_axes {
@@ -232,8 +246,23 @@ pub fn TTFont::glyph_outline_at(
     }
     coords.push(normalize_axis_coord(user_val, axis))
   }
-  let scalars = precompute_scalars(ivs, 0, coords)
-  glyph_outline_by_id_var(self, glyph_id, scalars)
+  // CFF2 variable font path
+  match self.cff {
+    Some(cff) =>
+      match cff.ivs {
+        Some(ivs) => {
+          let scalars = precompute_scalars(ivs, 0, coords)
+          return glyph_outline_by_id_var(self, glyph_id, scalars)
+        }
+        None => ()
+      }
+    None => ()
+  }
+  // glyf+gvar variable font path
+  if self.gvar is Some(_) {
+    return glyf_outline_by_id_var_gvar(self, glyph_id, coords)
+  }
+  self.glyph_outline(glyph_id)
 }
 
 ///|

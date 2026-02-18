@@ -10,6 +10,10 @@ pub fn parse_cmap(BinaryReader, Int) -> Map[Int, Int]
 
 pub fn parse_font(Bytes) -> TTFont?
 
+pub fn parse_font_at(Bytes, Int) -> TTFont?
+
+pub fn parse_font_collection(Bytes) -> Array[TTFont]?
+
 pub fn parse_fvar(BinaryReader, Int) -> Array[VarAxis]
 
 pub fn parse_head(BinaryReader, Int) -> (Int, Int)
@@ -88,6 +92,14 @@ pub(all) struct GlyphMetrics {
   bbox : GlyphBBox
 }
 
+pub(all) struct GvarData {
+  axis_count : Int
+  shared_tuples : Array[Array[Double]]
+  gvar_offset : Int
+  glyph_var_data_offset : Int
+  glyph_offsets : Array[Int]
+}
+
 pub(all) struct ItemVariationData {
   region_indices : Array[Int]
   delta_sets : Array[Array[Int]]
@@ -113,6 +125,7 @@ pub(all) struct TTFont {
   advance_widths : Array[Int]
   left_side_bearings : Array[Int]
   cff : CFFData?
+  gvar : GvarData?
   var_axes : Array[VarAxis]
 }
 pub fn TTFont::char_outline(Self, Int) -> Array[@svg.PathCommand]

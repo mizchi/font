@@ -1,9 +1,9 @@
 ///|
-/// Parse a simple glyph from the glyf table
-fn parse_simple_glyph(
+/// Parse raw glyph point data: coordinates, flags, and contour endpoints
+fn parse_glyph_points(
   reader : BinaryReader,
   num_contours : Int,
-) -> Array[Array[GlyphPoint]] {
+) -> (Array[Int], Array[Int], Array[Int], Array[Int]) {
   let end_points = Array::new(capacity=num_contours)
   for i = 0; i < num_contours; i = i + 1 {
     end_points.push(reader.read_uint16())
@@ -70,12 +70,22 @@ fn parse_simple_glyph(
     }
     y_coords.push(y)
   }
+  (x_coords, y_coords, flags, end_points)
+}
+
+///|
+/// Assemble contours from raw point data
+fn assemble_contours(
+  x_coords : Array[Int],
+  y_coords : Array[Int],
+  flags : Array[Int],
+  end_points : Array[Int],
+) -> Array[Array[GlyphPoint]] {
   let contours : Array[Array[GlyphPoint]] = []
   let mut start = 0
-  for c = 0; c < num_contours; c = c + 1 {
-    let end = end_points[c]
+  for ep in end_points {
     let contour : Array[GlyphPoint] = []
-    for j = start; j <= end; j = j + 1 {
+    for j = start; j <= ep; j = j + 1 {
       contour.push({
         x: x_coords[j],
         y: y_coords[j],
@@ -83,9 +93,21 @@ fn parse_simple_glyph(
       })
     }
     contours.push(contour)
-    start = end + 1
+    start = ep + 1
   }
   contours
+}
+
+///|
+/// Parse a simple glyph from the glyf table
+fn parse_simple_glyph(
+  reader : BinaryReader,
+  num_contours : Int,
+) -> Array[Array[GlyphPoint]] {
+  let (x_coords, y_coords, flags, end_points) = parse_glyph_points(
+    reader, num_contours,
+  )
+  assemble_contours(x_coords, y_coords, flags, end_points)
 }
 
 ///|
@@ -312,8 +334,59 @@ fn glyph_outline_by_id_var(
   }
   match font.cff {
     Some(cff) => cff_glyph_outline_var(font.data, cff, glyph_id, scalars)
-    None => glyf_outline_by_id(font, glyph_id) // glyf variation not yet supported
+    None => glyf_outline_by_id(font, glyph_id)
   }
+}
+
+///|
+/// Get glyf outline with gvar variation applied
+fn glyf_outline_by_id_var_gvar(
+  font : TTFont,
+  glyph_id : Int,
+  coords : Array[Double],
+) -> Array[@svg.PathCommand] {
+  let glyf_offset = font.loca[glyph_id]
+  let next_offset = font.loca[glyph_id + 1]
+  if glyf_offset == next_offset {
+    return []
+  }
+  let offset = font.glyf_offset + glyf_offset
+  let reader = BinaryReader::at(font.data, offset)
+  let num_contours = reader.read_int16()
+  let _x_min = reader.read_int16()
+  let _y_min = reader.read_int16()
+  let _x_max = reader.read_int16()
+  let _y_max = reader.read_int16()
+  if num_contours < 0 {
+    // Compound glyph: no gvar support yet, fall back to static
+    return parse_compound_glyph(font, reader)
+  }
+  let (x_coords, y_coords, flags, end_points) = parse_glyph_points(
+    reader, num_contours,
+  )
+  guard font.gvar is Some(gvar) else {
+    return contours_to_path_commands(
+      assemble_contours(x_coords, y_coords, flags, end_points),
+    )
+  }
+  let (dx, dy) = apply_gvar_deltas(
+    font.data,
+    gvar,
+    glyph_id,
+    coords,
+    x_coords,
+    y_coords,
+    end_points,
+  )
+  // Apply deltas
+  let var_x : Array[Int] = []
+  let var_y : Array[Int] = []
+  for i = 0; i < x_coords.length(); i = i + 1 {
+    var_x.push(x_coords[i] + dx[i])
+    var_y.push(y_coords[i] + dy[i])
+  }
+  let contours = assemble_contours(var_x, var_y, flags, end_points)
+  contours_to_path_commands(contours)
 }
 
 ///|
