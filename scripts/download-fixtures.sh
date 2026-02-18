@@ -3,15 +3,15 @@ set -euo pipefail
 
 REPO="mizchi/font"
 TAG="fixtures-v1"
-ASSET="fixtures.tar.gz"
+ASSET="noto-fixtures.tar.gz"
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [ -f "$DIR/fixtures/NotoSansMono-Regular.ttf" ]; then
-  echo "fixtures/ already exists, skipping download"
+  echo "NotoSans fixtures already exist, skipping download"
   exit 0
 fi
 
-echo "Downloading fixtures from $REPO release $TAG..."
+echo "Downloading NotoSans fixtures from $REPO release $TAG..."
 cd "$DIR"
 
 if command -v gh &>/dev/null; then
@@ -23,4 +23,4 @@ fi
 
 tar xzf /tmp/"$ASSET"
 rm -f /tmp/"$ASSET"
-echo "fixtures/ extracted successfully"
+echo "NotoSans fixtures extracted successfully"

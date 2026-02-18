@@ -240,7 +240,7 @@ just check
 just fmt
 ```
 
-Test fixtures (NotoSansMono, etc.) are not committed to the repository. They are downloaded from [GitHub Releases](https://github.com/mizchi/font/releases/tag/fixtures-v1) on first run.
+NotoSans font files are not committed to the repository. They are downloaded from [GitHub Releases](https://github.com/mizchi/font/releases/tag/fixtures-v1) on first run.
 
 ## Dependencies
 

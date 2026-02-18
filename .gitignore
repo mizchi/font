@@ -2,6 +2,7 @@ _build/
 target
 node_modules/
 .mooncakes/
-fixtures/
+fixtures/Noto*
+fixtures/woff2_brotli_stream.br
 debug-output.svg
 debug-weight-comparison.svg
