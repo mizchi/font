@@ -30,6 +30,8 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 
 ## Supported Specifications
 
+This library covers the core OpenType tables needed for **glyph rendering, metrics, variable fonts, and basic text layout**. Latin, CJK, and other scripts that don't require complex shaping work well out of the box.
+
 ### Font Formats
 
 | Format | | Notes |
@@ -42,42 +44,83 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 
 ### OpenType Tables
 
-| Table | | Description |
-|-------|:-:|-------------|
-| `head` | ✅ | units_per_em, indexToLocFormat |
-| `maxp` | ✅ | numGlyphs |
-| `hhea` | ✅ | ascent, descent, lineGap, numOfLongHorMetrics |
-| `hmtx` | ✅ | advanceWidth, leftSideBearing per glyph |
-| `cmap` | ✅ | Format 4 (BMP) + Format 12 (full Unicode) |
-| `loca` | ✅ | Short and long formats |
-| `glyf` | ✅ | Simple and compound glyphs |
-| `CFF ` | ✅ | Type 2 charstrings with subroutines |
-| `CFF2` | ✅ | Variable font support with blend/vsindex |
-| `fvar` | ✅ | Axis definitions (wght, wdth, opsz, etc.) |
-| `avar` | ✅ | Piecewise linear axis value mapping |
-| `gvar` | ✅ | TrueType delta interpolation with IUP |
-| `kern` | ✅ | Format 0 horizontal pairs |
-| `name` | ✅ | Windows Unicode, Unicode platform, Mac Roman |
-| `OS/2` | ✅ | Weight/width class, PANOSE, x-height, cap-height |
-| `post` | ✅ | Italic angle, fixed pitch, glyph names (v2.0) |
-| `GSUB` | ❌ | Glyph substitution (ligatures, alternates) |
-| `GPOS` | ❌ | Glyph positioning (pair adjustment, marks) |
-| `GDEF` | ❌ | Glyph definition (classes, mark attachment) |
-| `BASE` | ❌ | Baseline alignment data |
-| `MATH` | ❌ | Math layout constants and glyph assembly |
-| `COLR`/`CPAL` | ❌ | Color font layers and palettes |
-| `SVG ` | ❌ | SVG glyph documents |
-| `CBDT`/`CBLC` | ❌ | Color bitmap glyphs (emoji) |
-| `sbix` | ❌ | Apple-style bitmap glyphs |
-| `EBDT`/`EBLC` | ❌ | Monochrome/grayscale bitmaps |
-| `DSIG` | ❌ | Digital signature |
-| `JSTF` | ❌ | Justification alternatives |
-| `morx`/`mort` | ❌ | Apple Advanced Typography |
-| `cvt`/`fpgm`/`prep` | ❌ | TrueType hinting programs |
-| `vhea`/`vmtx` | ❌ | Vertical layout metrics |
-| `cvar` | ❌ | CVT variation |
+#### ✅ Parsed
+
+| Table | Description |
+|-------|-------------|
+| `head` | units_per_em, indexToLocFormat |
+| `maxp` | numGlyphs |
+| `hhea` | ascent, descent, lineGap, numOfLongHorMetrics |
+| `hmtx` | advanceWidth, leftSideBearing per glyph |
+| `cmap` | Format 4 (BMP) + Format 12 (full Unicode) |
+| `loca` | Short and long formats |
+| `glyf` | Simple and compound glyphs |
+| `CFF ` | Type 2 charstrings with subroutines |
+| `CFF2` | Variable font support with blend/vsindex |
+| `fvar` | Axis definitions (wght, wdth, opsz, etc.) |
+| `avar` | Piecewise linear axis value mapping |
+| `gvar` | TrueType delta interpolation with IUP |
+| `kern` | Format 0 horizontal pairs |
+| `name` | Windows Unicode, Unicode platform, Mac Roman |
+| `OS/2` | Weight/width class, PANOSE, x-height, cap-height |
+| `post` | Italic angle, fixed pitch, glyph names (v2.0) |
+
+#### ❌ Not Parsed
+
+The tables below are **not** parsed. Most of them are only needed for advanced use cases.
+
+**🔤 Complex Text Shaping** — Required for scripts with context-dependent glyph forms: Arabic, Hebrew, Devanagari, Thai, etc. Also needed for OpenType features like ligatures (`fi` → `fi`), stylistic alternates, and advanced kerning. Latin and CJK text renders correctly without these.
+
+| Table | Description |
+|-------|-------------|
+| `GSUB` | Glyph substitution — ligatures, contextual alternates, localized forms |
+| `GPOS` | Glyph positioning — pair adjustment, mark-to-base, mark-to-mark |
+| `GDEF` | Glyph definition — glyph classes, ligature caret positions, mark sets |
+| `BASE` | Baseline offsets for mixing scripts (e.g. Latin + CJK in one line) |
+| `JSTF` | Justification alternatives for full-justified text |
+
+**🎨 Color & Emoji** — Required for rendering color emoji and multi-color glyphs. Not needed for monochrome text rendering.
+
+| Table | Description |
+|-------|-------------|
+| `COLR`/`CPAL` | Color layers with palettes (COLRv0/v1 color fonts) |
+| `SVG ` | SVG glyph documents (SVG-in-OpenType color fonts) |
+| `CBDT`/`CBLC` | Color bitmap glyphs (Google/Android emoji) |
+| `sbix` | Apple bitmap glyphs (Apple emoji) |
+| `EBDT`/`EBLC` | Monochrome/grayscale embedded bitmaps (legacy low-res screens) |
+
+**📐 Specialized Rendering** — Needed only for specific rendering scenarios.
+
+| Table | Description |
+|-------|-------------|
+| `MATH` | Math layout constants and glyph assembly — only for TeX-like math typesetting engines |
+| `cvt`/`fpgm`/`prep` | TrueType hinting programs — grid-fitting instructions for low-DPI rasterization. Irrelevant for SVG/vector output |
+| `gasp` | Grid-fitting control — tells rasterizers when to apply hinting. Only matters for pixel rendering |
+| `hdmx` | Pre-computed device widths for specific PPEMs — legacy optimization for bitmap rendering |
+
+**📏 Vertical Layout** — Required for traditional top-to-bottom CJK text (e.g. Japanese vertical typesetting). Horizontal CJK works without these.
+
+| Table | Description |
+|-------|-------------|
+| `vhea`/`vmtx` | Vertical metrics — advance heights and top side bearings |
+| `VORG` | Vertical origin — CFF vertical glyph origin positions |
+
+**🍎 Apple AAT** — Apple-proprietary layout system. Most modern fonts use OpenType (GSUB/GPOS) instead. Only found in macOS system fonts and some legacy fonts.
+
+| Table | Description |
+|-------|-------------|
+| `morx`/`mort` | Apple Advanced Typography — state-machine-based shaping |
+
+**🔒 Other** — Rarely needed for rendering or layout.
+
+| Table | Description |
+|-------|-------------|
+| `DSIG` | Digital signature — font authenticity verification, does not affect rendering |
+| `cvar` | CVT variations — hinting value adjustments in variable fonts, only relevant if hinting is executed |
 
 ### CFF / CFF2 Charstring Operators
+
+All standard operators for outline extraction are supported:
 
 | Category | | Operators |
 |----------|:-:|-----------|
@@ -93,7 +136,7 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 | Stack | ✅ | `dup`, `exch`, `drop`, `index`, `roll`, `put`, `get` |
 | CFF2 Variation | ✅ | `blend`, `vsindex` |
 | Control | ✅ | `endchar` |
-| Deprecated | ➖ | `seac` (accent composition), `dotsection` |
+| Deprecated | ➖ | `seac`, `dotsection` — removed from modern specs |
 
 ### Glyph Outlines
 
@@ -105,29 +148,35 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 | CFF2 charstrings | ✅ | Blend interpolation |
 | TrueType variations (gvar) | ✅ | Shared tuples, IUP, delta unpacking |
 | CFF2 variations (ItemVariationStore) | ✅ | Region scalars, blend deltas |
-| Hinting / instruction execution | ❌ | Instructions are preserved but not executed |
+| Hinting / instruction execution | ❌ | Not needed for vector/SVG output |
 
 ### cmap Formats
+
+Format 4 + 12 cover virtually all modern fonts. The unsupported formats are legacy or niche:
 
 | Format | | Coverage |
 |--------|:-:|----------|
 | Format 4 | ✅ | BMP (U+0000–U+FFFF) |
 | Format 12 | ✅ | Full Unicode (preferred when available) |
-| Format 0 | ❌ | Mac Roman 256-char mapping |
-| Format 2 | ❌ | CJK mixed 8/16-bit encoding |
-| Format 6 | ❌ | Trimmed table mapping |
-| Format 14 | ❌ | Unicode Variation Sequences (UVS) |
+| Format 0 | ❌ | Mac Roman 256-char — legacy, rarely seen in modern fonts |
+| Format 2 | ❌ | CJK mixed 8/16-bit — obsolete encoding, replaced by Format 12 |
+| Format 6 | ❌ | Trimmed table — rarely used, covered by Format 4 |
+| Format 14 | ❌ | Unicode Variation Sequences — needed for CJK glyph variants (e.g. JP vs CN forms) |
 
 ### Kerning
 
+The `kern` table Format 0 covers most Latin fonts. GPOS-based kerning requires the OpenType layout engine (GSUB/GPOS), which is a significantly larger scope:
+
 | Feature | | Notes |
 |---------|:-:|-------|
-| `kern` table Format 0 (flat pairs) | ✅ | |
-| `kern` table Format 1 (Apple state machine) | ❌ | |
-| `GPOS` pair adjustment (PairPos) | ❌ | |
-| `GPOS` contextual kerning | ❌ | |
+| `kern` table Format 0 (flat pairs) | ✅ | Covers most Latin fonts |
+| `kern` table Format 1 (Apple state machine) | ❌ | Apple-only, rare in cross-platform fonts |
+| `GPOS` pair adjustment (PairPos) | ❌ | More precise than `kern`, used by modern fonts |
+| `GPOS` contextual kerning | ❌ | Context-dependent spacing adjustments |
 
 ### Font Subsetting
+
+Subsetting extracts only the glyphs you need, reducing file size for web delivery:
 
 | Feature | | Notes |
 |---------|:-:|-------|
@@ -136,11 +185,13 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 | Glyph ID remapping | ✅ | |
 | cmap Format 12 rebuild | ✅ | |
 | Table copy (head, hhea, hmtx, maxp, name, OS/2, post) | ✅ | |
-| CFF/CFF2 subsetting | ❌ | |
-| WOFF/WOFF2 output | ❌ | Outputs raw sfnt (TTF) |
-| Layout table subsetting (GSUB/GPOS) | ❌ | |
+| CFF/CFF2 subsetting | ❌ | CFF charstring rewriting is complex |
+| WOFF/WOFF2 output | ❌ | Outputs raw sfnt — wrap with external compressor |
+| Layout table subsetting (GSUB/GPOS) | ❌ | Requires lookup/coverage rewriting |
 
 ### Text Layout
+
+Horizontal left-to-right text with kerning is fully supported. The unsupported features represent a full text shaping engine (like HarfBuzz), which is a separate domain:
 
 | Feature | | Notes |
 |---------|:-:|-------|
@@ -148,10 +199,10 @@ let subset = @font.subset_font(data, [0x41, 0x42, 0x43]) // A, B, C
 | Pair kerning (`kern` table) | ✅ | |
 | UTF-16 surrogate pair handling | ✅ | |
 | Text width measurement | ✅ | |
-| OpenType shaping (GSUB/GPOS) | ❌ | |
-| Bidirectional text | ❌ | |
-| Vertical layout | ❌ | |
-| Line breaking | ❌ | |
+| OpenType shaping (GSUB/GPOS) | ❌ | Full shaping engine — needed for Arabic, Devanagari, ligatures |
+| Bidirectional text | ❌ | Unicode BiDi algorithm — needed for mixed LTR/RTL text |
+| Vertical layout | ❌ | Top-to-bottom CJK typesetting |
+| Line breaking | ❌ | Text wrapping — typically handled by the application layer |
 
 ### JS Bindings (Wasm)
 
