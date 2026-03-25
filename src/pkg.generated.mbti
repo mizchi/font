@@ -8,13 +8,25 @@ import {
 // Values
 pub fn analyze_tables(Bytes) -> Array[TableInfo]?
 
+pub fn blit_to_atlas(Array[Int], Int, GlyphBitmap, Int, Int) -> Unit
+
 pub fn bytes_slice(Bytes, Int, Int) -> Bytes
 
 pub fn calc_table_checksum(Bytes) -> Int
 
 pub fn compute_path_bbox(Array[@svg.PathCommand]) -> GlyphBBox
 
+pub fn default_text_style(String, Double) -> TextStyle
+
+pub fn detect_font_format(Bytes) -> FontFormat
+
 pub fn log2_floor(Int) -> Int
+
+pub fn make_glyph_cache_key(Int, Double) -> Int
+
+pub fn new_text_run(String, TextStyle) -> TextRun
+
+pub fn outline_bbox(Array[@svg.PathCommand]) -> (Double, Double, Double, Double)
 
 pub fn pad4(Int) -> Int
 
@@ -62,6 +74,10 @@ pub fn parse_woff1(Bytes) -> TTFont?
 
 pub fn parse_woff2(Bytes) -> TTFont?
 
+pub fn path_commands_to_svg_d(Array[@svg.PathCommand]) -> String
+
+pub fn rasterize_glyph(TTFont, Int, Double) -> GlyphBitmap?
+
 pub fn rebuild_sfnt(Int, Array[(String, Bytes)]) -> Bytes
 
 pub fn scale_commands(Array[@svg.PathCommand], Double, Bool) -> Array[@svg.PathCommand]
@@ -75,6 +91,14 @@ pub fn write_be32(Array[Byte], Int, Int) -> Unit
 // Errors
 
 // Types and methods
+pub struct AtlasPageInfo {
+  page_id : Int
+  width : Int
+  height : Int
+  dirty : Bool
+}
+pub impl Show for AtlasPageInfo
+
 pub(all) struct BinaryReader {
   data : Bytes
   mut pos : Int
@@ -111,6 +135,24 @@ pub(all) struct CFFIndex {
   offsets : Array[Int]
 }
 
+pub enum FontFormat {
+  TrueType
+  OpenType
+  Woff1
+  Woff2
+  TrueTypeCollection
+  Unknown
+}
+pub impl Eq for FontFormat
+pub impl Show for FontFormat
+
+pub struct FontKey {
+  family : String
+  weight : Int
+  italic : Bool
+}
+pub impl Show for FontKey
+
 pub(all) struct GaspRange {
   max_ppem : Int
   behavior : Int
@@ -122,12 +164,57 @@ pub(all) struct Glyph {
   outline : Array[@svg.PathCommand]
 }
 
+pub struct GlyphAtlas {
+  cache : GlyphCache
+  width : Int
+  height : Int
+  pixels : Array[Int]
+  mut dirty : Bool
+  mut last_used_generation : Int
+}
+pub fn GlyphAtlas::get_cache(Self) -> GlyphCache
+pub fn GlyphAtlas::get_pixels(Self) -> Array[Int]
+pub fn GlyphAtlas::new(Int, Int, Int) -> Self
+pub fn GlyphAtlas::rasterize_glyph(Self, TTFont, Int, Double) -> GlyphCacheEntry?
+
 pub(all) struct GlyphBBox {
   x_min : Int
   y_min : Int
   x_max : Int
   y_max : Int
 }
+
+pub struct GlyphBitmap {
+  width : Int
+  height : Int
+  pixels : Array[Int]
+}
+pub impl Show for GlyphBitmap
+
+pub struct GlyphCache {
+  entries : Map[Int, GlyphCacheEntry]
+  mut next_x : Double
+  mut next_y : Double
+  mut row_height : Double
+  atlas_width : Double
+  atlas_height : Double
+  atlas_page_id : Int
+}
+pub fn GlyphCache::allocate(Self, Int, Double, Double) -> GlyphCacheEntry?
+pub fn GlyphCache::clear(Self) -> Unit
+pub fn GlyphCache::entry_count(Self) -> Int
+pub fn GlyphCache::get(Self, Int) -> GlyphCacheEntry?
+pub fn GlyphCache::new(Double, Double, Int) -> Self
+
+pub struct GlyphCacheEntry {
+  glyph_id : Int
+  atlas_x : Double
+  atlas_y : Double
+  atlas_w : Double
+  atlas_h : Double
+  atlas_page_id : Int
+}
+pub impl Show for GlyphCacheEntry
 
 pub(all) struct GlyphMetrics {
   advance_width : Int
@@ -142,6 +229,19 @@ pub(all) struct GlyphPosition {
   y_offset : Double
   x_advance : Double
 }
+
+pub struct GlyphQuad {
+  glyph_id : Int
+  atlas_x : Double
+  atlas_y : Double
+  atlas_w : Double
+  atlas_h : Double
+  dst_x : Double
+  dst_y : Double
+  dst_w : Double
+  dst_h : Double
+}
+pub impl Show for GlyphQuad
 
 pub(all) struct GvarData {
   axis_count : Int
@@ -245,6 +345,49 @@ pub(all) struct TableInfo {
   offset : Int
   length : Int
 }
+
+pub struct TextMetrics {
+  width : Double
+  height : Double
+  baseline : Double
+}
+pub impl Show for TextMetrics
+
+pub struct TextRenderer {
+  mut pages : Array[GlyphAtlas]
+  font : TTFont
+  pipeline_id : Int
+  atlas_size : Int
+  base_page_id : Int
+  max_pages : Int
+  mut generation : Int
+}
+pub fn TextRenderer::clear(Self) -> Unit
+pub fn TextRenderer::ensure_glyph(Self, Int, Double) -> (Int, GlyphCacheEntry)?
+pub fn TextRenderer::flush_dirty_pages(Self) -> Array[AtlasPageInfo]
+pub fn TextRenderer::get_atlas(Self) -> GlyphAtlas
+pub fn TextRenderer::get_page(Self, Int) -> GlyphAtlas
+pub fn TextRenderer::get_page_id(Self) -> Int
+pub fn TextRenderer::get_page_ids(Self) -> Array[Int]
+pub fn TextRenderer::glyph_count(Self) -> Int
+pub fn TextRenderer::measure(Self, String, Double) -> TextMetrics
+pub fn TextRenderer::new(TTFont, Int, Int, Int) -> Self
+pub fn TextRenderer::new_with_options(TTFont, Int, Int, Int, Int) -> Self
+pub fn TextRenderer::page_count(Self) -> Int
+
+pub struct TextRun {
+  text : String
+  style : TextStyle
+}
+pub impl Show for TextRun
+
+pub struct TextStyle {
+  font : FontKey
+  size_px : Double
+  line_height : Double
+  letter_spacing : Double
+}
+pub impl Show for TextStyle
 
 pub(all) struct VarAxis {
   tag : String
