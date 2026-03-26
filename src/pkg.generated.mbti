@@ -172,10 +172,12 @@ pub struct GlyphAtlas {
   mut dirty : Bool
   mut last_used_generation : Int
 }
+pub fn GlyphAtlas::deserialize(Array[Int]) -> Self?
 pub fn GlyphAtlas::get_cache(Self) -> GlyphCache
 pub fn GlyphAtlas::get_pixels(Self) -> Array[Int]
 pub fn GlyphAtlas::new(Int, Int, Int) -> Self
 pub fn GlyphAtlas::rasterize_glyph(Self, TTFont, Int, Double) -> GlyphCacheEntry?
+pub fn GlyphAtlas::serialize(Self) -> Array[Int]
 
 pub(all) struct GlyphBBox {
   x_min : Int
@@ -370,10 +372,12 @@ pub fn TextRenderer::get_page(Self, Int) -> GlyphAtlas
 pub fn TextRenderer::get_page_id(Self) -> Int
 pub fn TextRenderer::get_page_ids(Self) -> Array[Int]
 pub fn TextRenderer::glyph_count(Self) -> Int
+pub fn TextRenderer::load_cache(Self, Array[Array[Int]]) -> Int
 pub fn TextRenderer::measure(Self, String, Double) -> TextMetrics
 pub fn TextRenderer::new(TTFont, Int, Int, Int) -> Self
 pub fn TextRenderer::new_with_options(TTFont, Int, Int, Int, Int) -> Self
 pub fn TextRenderer::page_count(Self) -> Int
+pub fn TextRenderer::serialize_cache(Self) -> Array[Array[Int]]
 
 pub struct TextRun {
   text : String
