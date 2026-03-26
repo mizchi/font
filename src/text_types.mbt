@@ -2,14 +2,14 @@
 /// Text rendering type definitions.
 
 ///|
-pub struct FontKey {
+pub(all) struct FontKey {
   family : String
   weight : Int
   italic : Bool
 } derive(Show)
 
 ///|
-pub struct TextStyle {
+pub(all) struct TextStyle {
   font : FontKey
   size_px : Double
   line_height : Double
@@ -17,14 +17,14 @@ pub struct TextStyle {
 } derive(Show)
 
 ///|
-pub struct TextMetrics {
+pub(all) struct TextMetrics {
   width : Double
   height : Double
   baseline : Double
 } derive(Show)
 
 ///|
-pub struct GlyphQuad {
+pub(all) struct GlyphQuad {
   glyph_id : Int
   atlas_x : Double
   atlas_y : Double
@@ -37,7 +37,7 @@ pub struct GlyphQuad {
 } derive(Show)
 
 ///|
-pub struct TextRun {
+pub(all) struct TextRun {
   text : String
   style : TextStyle
 } derive(Show)
@@ -92,7 +92,7 @@ pub fn detect_font_format(data : Bytes) -> FontFormat {
 }
 
 ///|
-pub struct AtlasPageInfo {
+pub(all) struct AtlasPageInfo {
   page_id : Int
   width : Int
   height : Int

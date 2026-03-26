@@ -13,7 +13,7 @@ pub fn make_glyph_cache_key(glyph_id : Int, size_px : Double) -> Int {
 }
 
 ///|
-pub struct GlyphCacheEntry {
+pub(all) struct GlyphCacheEntry {
   glyph_id : Int
   atlas_x : Double
   atlas_y : Double

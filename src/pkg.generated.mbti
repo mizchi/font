@@ -91,7 +91,7 @@ pub fn write_be32(Array[Byte], Int, Int) -> Unit
 // Errors
 
 // Types and methods
-pub struct AtlasPageInfo {
+pub(all) struct AtlasPageInfo {
   page_id : Int
   width : Int
   height : Int
@@ -146,7 +146,7 @@ pub enum FontFormat {
 pub impl Eq for FontFormat
 pub impl Show for FontFormat
 
-pub struct FontKey {
+pub(all) struct FontKey {
   family : String
   weight : Int
   italic : Bool
@@ -208,7 +208,7 @@ pub fn GlyphCache::entry_count(Self) -> Int
 pub fn GlyphCache::get(Self, Int) -> GlyphCacheEntry?
 pub fn GlyphCache::new(Double, Double, Int) -> Self
 
-pub struct GlyphCacheEntry {
+pub(all) struct GlyphCacheEntry {
   glyph_id : Int
   atlas_x : Double
   atlas_y : Double
@@ -232,7 +232,7 @@ pub(all) struct GlyphPosition {
   x_advance : Double
 }
 
-pub struct GlyphQuad {
+pub(all) struct GlyphQuad {
   glyph_id : Int
   atlas_x : Double
   atlas_y : Double
@@ -348,7 +348,7 @@ pub(all) struct TableInfo {
   length : Int
 }
 
-pub struct TextMetrics {
+pub(all) struct TextMetrics {
   width : Double
   height : Double
   baseline : Double
@@ -379,13 +379,13 @@ pub fn TextRenderer::new_with_options(TTFont, Int, Int, Int, Int) -> Self
 pub fn TextRenderer::page_count(Self) -> Int
 pub fn TextRenderer::serialize_cache(Self) -> Array[Array[Int]]
 
-pub struct TextRun {
+pub(all) struct TextRun {
   text : String
   style : TextStyle
 }
 pub impl Show for TextRun
 
-pub struct TextStyle {
+pub(all) struct TextStyle {
   font : FontKey
   size_px : Double
   line_height : Double
