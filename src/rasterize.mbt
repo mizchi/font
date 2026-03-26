@@ -118,35 +118,29 @@ pub fn rasterize_glyph(
   if w <= 0 || h <= 0 {
     return None
   }
-  let d = path_commands_to_svg_d(outline)
-  // SVG with y-flip transform: font coords (y-up) → SVG coords (y-down)
-  let tx = (-x_min + pad).to_string()
-  let ty = (y_max + pad).to_string()
-  let svg_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" +
-    w.to_string() +
-    "\" height=\"" +
-    h.to_string() +
-    "\"><g transform=\"translate(" +
-    tx +
-    ", " +
-    ty +
-    ") scale(1, -1)\"><path d=\"" +
-    d +
-    "\" fill=\"white\"/></g></svg>"
-  match @svg.render_svg_to_image(svg_str, w, h) {
-    Some(img) => {
-      let pixels : Array[Int] = []
-      for i = 0; i < img.pixels.length(); i = i + 1 {
-        let color = img.pixels[i]
-        pixels.push(color.r)
-        pixels.push(color.g)
-        pixels.push(color.b)
-        pixels.push(color.a)
-      }
-      Some({ width: img.width, height: img.height, pixels })
-    }
-    None => None
+  // Direct path rendering: skip SVG string serialization/parsing.
+  // Transform: translate(-x_min+pad, y_max+pad) scale(1, -1) for font Y-up → image Y-down
+  let tx = -x_min + pad
+  let ty = y_max + pad
+  // Affine transform [a, b, c, d, e, f]: scale(1,-1) then translate(tx,ty)
+  // Combined: [1, 0, 0, -1, tx, ty]
+  let transform = [1.0, 0.0, 0.0, -1.0, tx, ty]
+  let img = @svg.render_path_commands_to_image(
+    outline,
+    w,
+    h,
+    @svg.Color::white(),
+    transform~,
+  )
+  let pixels : Array[Int] = []
+  for i = 0; i < img.pixels.length(); i = i + 1 {
+    let color = img.pixels[i]
+    pixels.push(color.r)
+    pixels.push(color.g)
+    pixels.push(color.b)
+    pixels.push(color.a)
   }
+  Some({ width: img.width, height: img.height, pixels })
 }
 
 ///|
