@@ -59,6 +59,19 @@ pub fn glyphToSvgPath(codepoint : Int, font_size : Double) -> String {
 }
 
 ///|
+/// Get glyph outline as JSON array of commands: [[type, ...args], ...]
+/// where type is "M", "L", "Q", "C", "Z"
+pub fn glyphOutlineCommands(codepoint : Int, font_size : Double) -> String {
+  match global_font.val {
+    Some(font) => {
+      let cmds = font.scaled_outline(codepoint, font_size)
+      commands_to_json_array(cmds)
+    }
+    None => "[]"
+  }
+}
+
+///|
 /// Get glyph advance width scaled to font size
 pub fn glyphAdvance(codepoint : Int, font_size : Double) -> Double {
   match global_font.val {
@@ -280,4 +293,62 @@ fn commands_to_svg_path(cmds : Array[@svg.PathCommand]) -> String {
 fn write_num(buf : StringBuilder, n : Double) -> Unit {
   let rounded = (n * 100.0).to_int().to_double() / 100.0
   buf.write_string(rounded.to_string())
+}
+
+///|
+/// Convert PathCommand array to JSON array: [[type, ...args], ...]
+fn commands_to_json_array(cmds : Array[@svg.PathCommand]) -> String {
+  let buf = StringBuilder::new()
+  buf.write_char('[')
+  for i, cmd in cmds {
+    if i > 0 {
+      buf.write_char(',')
+    }
+    match cmd {
+      @svg.MoveTo(x, y) => {
+        buf.write_string("[\"M\",")
+        write_num(buf, x)
+        buf.write_char(',')
+        write_num(buf, y)
+        buf.write_char(']')
+      }
+      @svg.LineTo(x, y) => {
+        buf.write_string("[\"L\",")
+        write_num(buf, x)
+        buf.write_char(',')
+        write_num(buf, y)
+        buf.write_char(']')
+      }
+      @svg.QuadraticCurveTo(cx, cy, x, y) => {
+        buf.write_string("[\"Q\",")
+        write_num(buf, cx)
+        buf.write_char(',')
+        write_num(buf, cy)
+        buf.write_char(',')
+        write_num(buf, x)
+        buf.write_char(',')
+        write_num(buf, y)
+        buf.write_char(']')
+      }
+      @svg.CurveTo(cx1, cy1, cx2, cy2, x, y) => {
+        buf.write_string("[\"C\",")
+        write_num(buf, cx1)
+        buf.write_char(',')
+        write_num(buf, cy1)
+        buf.write_char(',')
+        write_num(buf, cx2)
+        buf.write_char(',')
+        write_num(buf, cy2)
+        buf.write_char(',')
+        write_num(buf, x)
+        buf.write_char(',')
+        write_num(buf, y)
+        buf.write_char(']')
+      }
+      @svg.ClosePath => buf.write_string("[\"Z\"]")
+      _ => ()
+    }
+  }
+  buf.write_char(']')
+  buf.to_string()
 }

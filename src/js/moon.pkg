@@ -9,6 +9,7 @@ options(
       "exports": [
         "loadFont",
         "glyphToSvgPath",
+        "glyphOutlineCommands",
         "glyphAdvance",
         "getFontInfo",
         "fontName",

@@ -14,6 +14,8 @@ pub fn glyphAdvance(Int, Double) -> Double
 
 pub fn glyphIds() -> String
 
+pub fn glyphOutlineCommands(Int, Double) -> String
+
 pub fn glyphToSvgPath(Int, Double) -> String
 
 pub fn isFixedPitch() -> Int
