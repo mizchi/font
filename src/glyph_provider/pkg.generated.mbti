@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/font/glyph_provider"
+
+import {
+  "mizchi/font",
+  "mizchi/svg",
+}
+
+// Values
+pub fn axis_values_for_weight(Double) -> Map[String, Double]
+
+pub fn glyph_provider_from_bytes(Bytes) -> GlyphProvider?
+
+pub fn glyph_provider_from_font(@font.TTFont) -> GlyphProvider
+
+// Errors
+
+// Types and methods
+pub(all) struct GlyphProvider {
+  get_glyph : (Int, Double, Bool) -> (Array[@svg.PathCommand], Double)
+  get_kern : (Int, Int, Double, Bool) -> Double
+  get_glyph_by_weight : ((Int, Double, Double) -> (Array[@svg.PathCommand], Double))?
+  get_kern_by_weight : ((Int, Int, Double, Double) -> Double)?
+  ascent_ratio : Double
+}
+pub fn GlyphProvider::from_font(@font.TTFont) -> Self
+
+// Type aliases
+
+// Traits
+
