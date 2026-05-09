@@ -1,0 +1,4 @@
+import {
+  "mizchi/font/glyph_provider" @glyph_provider,
+  "mizchi/svg" @svg,
+}

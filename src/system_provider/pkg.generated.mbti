@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mizchi/font/system_provider"
+
+import {
+  "mizchi/font/glyph_provider",
+}
+
+// Values
+pub fn load_system_glyph_provider((String) -> Bytes) -> @glyph_provider.GlyphProvider?
+
+pub fn merge_glyph_provider_pairs(Array[(@glyph_provider.GlyphProvider, @glyph_provider.GlyphProvider?)]) -> @glyph_provider.GlyphProvider
+
+pub fn system_font_face_candidates() -> Array[(Array[String], Array[String])]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+
