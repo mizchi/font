@@ -151,7 +151,7 @@ fn iup_contour(
       idx = start_point
     }
     while idx != i1 {
-      if not(touch_flags[idx]) {
+      if !touch_flags[idx] {
         let c = coords[idx]
         deltas[idx] = iup_interpolate(c, c0, c1, d0, d1)
       }

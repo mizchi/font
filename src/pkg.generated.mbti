@@ -142,8 +142,7 @@ pub enum FontFormat {
   Woff2
   TrueTypeCollection
   Unknown
-}
-pub impl Eq for FontFormat
+} derive(Eq)
 pub impl Show for FontFormat
 
 pub(all) struct FontKey {

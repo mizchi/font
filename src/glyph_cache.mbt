@@ -20,7 +20,24 @@ pub(all) struct GlyphCacheEntry {
   atlas_w : Double
   atlas_h : Double
   atlas_page_id : Int
-} derive(Show)
+}
+
+///|
+pub impl Show for GlyphCacheEntry with output(self, logger) {
+  logger.write_string("{glyph_id: ")
+  self.glyph_id.output(logger)
+  logger.write_string(", atlas_x: ")
+  self.atlas_x.output(logger)
+  logger.write_string(", atlas_y: ")
+  self.atlas_y.output(logger)
+  logger.write_string(", atlas_w: ")
+  self.atlas_w.output(logger)
+  logger.write_string(", atlas_h: ")
+  self.atlas_h.output(logger)
+  logger.write_string(", atlas_page_id: ")
+  self.atlas_page_id.output(logger)
+  logger.write_string("}")
+}
 
 ///|
 pub struct GlyphCache {

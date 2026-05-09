@@ -467,7 +467,7 @@ fn cff_glyph_outline(
     data, cs_offset, cs_length, cff, commands, stack, state, 0,
   )
   // CFF2: endchar is optional; close path implicitly if not ended
-  if cff.is_cff2 && not(state.ended) && not(state.first_move) {
+  if cff.is_cff2 && !state.ended && !state.first_move {
     commands.push(@svg.ClosePath)
   }
   commands
@@ -501,7 +501,7 @@ fn cff_glyph_outline_var(
   interpret_charstring(
     data, cs_offset, cs_length, cff, commands, stack, state, 0,
   )
-  if not(state.ended) && not(state.first_move) {
+  if !state.ended && !state.first_move {
     commands.push(@svg.ClosePath)
   }
   commands
@@ -556,8 +556,8 @@ fn interpret_charstring(
 
 ///|
 fn check_width(stack : Array[Double], state : CSState, expected : Int) -> Unit {
-  if not(state.has_width) {
-    if not(state.is_cff2) && stack.length() > expected {
+  if !state.has_width {
+    if !state.is_cff2 && stack.length() > expected {
       let _ = stack.remove(0)
     }
     state.has_width = true
@@ -586,7 +586,7 @@ fn exec_operator(
     4 => {
       // vmoveto
       check_width(stack, state, 1)
-      if not(state.first_move) {
+      if !state.first_move {
         commands.push(@svg.ClosePath)
       }
       state.first_move = false
@@ -615,7 +615,7 @@ fn exec_operator(
           state.y = state.y + stack[i]
         }
         commands.push(@svg.LineTo(state.x, state.y))
-        horiz = not(horiz)
+        horiz = !horiz
       }
       stack.clear()
     }
@@ -629,7 +629,7 @@ fn exec_operator(
           state.y = state.y + stack[i]
         }
         commands.push(@svg.LineTo(state.x, state.y))
-        horiz = not(horiz)
+        horiz = !horiz
       }
       stack.clear()
     }
@@ -674,7 +674,7 @@ fn exec_operator(
     14 => {
       // endchar
       check_width(stack, state, 0)
-      if not(state.first_move) {
+      if !state.first_move {
         commands.push(@svg.ClosePath)
       }
       stack.clear()
@@ -729,7 +729,7 @@ fn exec_operator(
     21 => {
       // rmoveto
       check_width(stack, state, 2)
-      if not(state.first_move) {
+      if !state.first_move {
         commands.push(@svg.ClosePath)
       }
       state.first_move = false
@@ -741,7 +741,7 @@ fn exec_operator(
     22 => {
       // hmoveto
       check_width(stack, state, 1)
-      if not(state.first_move) {
+      if !state.first_move {
         commands.push(@svg.ClosePath)
       }
       state.first_move = false
@@ -888,7 +888,7 @@ fn exec_vh_curves(
       commands.push(@svg.CurveTo(cx1, cy1, cx2, cy2, state.x, state.y))
       i = i + 4 + (if remaining == 5 { 1 } else { 0 })
     }
-    phase = not(phase)
+    phase = !phase
   }
   stack.clear()
 }

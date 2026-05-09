@@ -128,7 +128,7 @@ test "ttc/second_font_outline" {
         _ => false
       }
     })
-  assert_true(not(has_700))
+  assert_true(!has_700)
 }
 
 ///|

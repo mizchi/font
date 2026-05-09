@@ -60,7 +60,7 @@ fn reconstruct_glyf_loca(
       ()
     } else if n_contours == -1 {
       // Composite glyph (must have explicit bbox)
-      if not(have_bbox) {
+      if !have_bbox {
         return None
       }
       // nContours = -1

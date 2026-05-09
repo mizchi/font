@@ -38,7 +38,7 @@ fn BBoxAccum::add(self : BBoxAccum, x : Double, y : Double) -> Unit {
 
 ///|
 fn BBoxAccum::to_bbox(self : BBoxAccum) -> GlyphBBox {
-  if not(self.has_points) {
+  if !self.has_points {
     return { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
   }
   {

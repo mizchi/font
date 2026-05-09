@@ -7,7 +7,18 @@ pub struct GlyphBitmap {
   width : Int
   height : Int
   pixels : Array[Int]
-} derive(Show)
+}
+
+///|
+pub impl Show for GlyphBitmap with output(self, logger) {
+  logger.write_string("{width: ")
+  self.width.output(logger)
+  logger.write_string(", height: ")
+  self.height.output(logger)
+  logger.write_string(", pixels: ")
+  self.pixels.output(logger)
+  logger.write_string("}")
+}
 
 ///|
 /// Convert font outline PathCommands to SVG path `d` attribute string.
