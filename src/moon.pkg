@@ -2,6 +2,7 @@ import {
   "mizchi/svg",
   "mizchi/zlib",
   "mizchi/brotli",
+  "moonbitlang/core/debug",
 }
 
 import {

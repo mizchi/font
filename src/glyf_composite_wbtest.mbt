@@ -114,7 +114,7 @@ let test_glyf_one_ttf : FixedArray[Byte] = [
 ///|
 test "glyf/composite_g_cedilla" {
   let data = Bytes::from_array(test_glyf_one_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // U+0123 = ģ (g with cedilla above, composite glyph)
   let gid = font.glyph_index(0x123)
   assert_true(gid > 0)
@@ -127,10 +127,72 @@ test "glyf/composite_g_cedilla" {
     .any(fn(cmd) { cmd is @svg.QuadraticCurveTo(_, _, _, _) })
   assert_true(has_quad)
   // Use inspect snapshot for path commands
-  inspect(
+  @debug.debug_inspect(
     outline,
     content=(
-      #|[MoveTo(199, 97), LineTo(199, 97), LineTo(313, 97), QuadraticCurveTo(396, 97, 444.5, 61), QuadraticCurveTo(493, 25, 493, -36), QuadraticCurveTo(493, -108, 428, -151.5), QuadraticCurveTo(363, -195, 255, -195), QuadraticCurveTo(150, -195, 90, -156), QuadraticCurveTo(30, -117, 30, -49), QuadraticCurveTo(30, 25, 117, 74), QuadraticCurveTo(92, 94, 92, 129), QuadraticCurveTo(92, 177, 141, 220), QuadraticCurveTo(86, 266, 86, 345), QuadraticCurveTo(86, 419, 134.5, 464.5), QuadraticCurveTo(183, 510, 262, 510), QuadraticCurveTo(330, 510, 375, 476), LineTo(482, 489), QuadraticCurveTo(498, 490, 498, 475), QuadraticCurveTo(498, 469, 494, 454), LineTo(491, 443), LineTo(408, 443), QuadraticCurveTo(438, 400, 438, 345), QuadraticCurveTo(438, 271, 389.5, 225.5), QuadraticCurveTo(341, 180, 262, 180), QuadraticCurveTo(211, 180, 171, 200), QuadraticCurveTo(143, 175, 143, 141), QuadraticCurveTo(143, 97, 199, 97), ClosePath, MoveTo(313, 53), LineTo(313, 53), LineTo(178, 53), QuadraticCurveTo(165, 53, 151, 56), QuadraticCurveTo(85, 13, 85, -46), QuadraticCurveTo(85, -94, 131, -122.5), QuadraticCurveTo(177, -151, 255, -151), QuadraticCurveTo(338, -151, 388, -119.5), QuadraticCurveTo(438, -88, 438, -36), QuadraticCurveTo(438, 53, 313, 53), ClosePath, MoveTo(387, 345), LineTo(387, 345), QuadraticCurveTo(387, 401, 353, 434), QuadraticCurveTo(319, 467, 262, 467), QuadraticCurveTo(205, 467, 171, 434), QuadraticCurveTo(137, 401, 137, 345), QuadraticCurveTo(137, 289, 171, 256), QuadraticCurveTo(205, 223, 262, 223), QuadraticCurveTo(319, 223, 353, 256), QuadraticCurveTo(387, 289, 387, 345), ClosePath, MoveTo(268, 671), LineTo(268, 671), LineTo(302, 650), QuadraticCurveTo(306, 640, 306, 631), QuadraticCurveTo(306, 590, 262, 590), QuadraticCurveTo(214, 590, 214, 645), QuadraticCurveTo(214, 669, 230, 707.5), QuadraticCurveTo(246, 746, 271, 780), QuadraticCurveTo(292, 777, 304, 765), QuadraticCurveTo(272, 707, 268, 671), ClosePath]
+      #|[
+      #|  MoveTo(199, 97),
+      #|  LineTo(199, 97),
+      #|  LineTo(313, 97),
+      #|  QuadraticCurveTo(396, 97, 444.5, 61),
+      #|  QuadraticCurveTo(493, 25, 493, -36),
+      #|  QuadraticCurveTo(493, -108, 428, -151.5),
+      #|  QuadraticCurveTo(363, -195, 255, -195),
+      #|  QuadraticCurveTo(150, -195, 90, -156),
+      #|  QuadraticCurveTo(30, -117, 30, -49),
+      #|  QuadraticCurveTo(30, 25, 117, 74),
+      #|  QuadraticCurveTo(92, 94, 92, 129),
+      #|  QuadraticCurveTo(92, 177, 141, 220),
+      #|  QuadraticCurveTo(86, 266, 86, 345),
+      #|  QuadraticCurveTo(86, 419, 134.5, 464.5),
+      #|  QuadraticCurveTo(183, 510, 262, 510),
+      #|  QuadraticCurveTo(330, 510, 375, 476),
+      #|  LineTo(482, 489),
+      #|  QuadraticCurveTo(498, 490, 498, 475),
+      #|  QuadraticCurveTo(498, 469, 494, 454),
+      #|  LineTo(491, 443),
+      #|  LineTo(408, 443),
+      #|  QuadraticCurveTo(438, 400, 438, 345),
+      #|  QuadraticCurveTo(438, 271, 389.5, 225.5),
+      #|  QuadraticCurveTo(341, 180, 262, 180),
+      #|  QuadraticCurveTo(211, 180, 171, 200),
+      #|  QuadraticCurveTo(143, 175, 143, 141),
+      #|  QuadraticCurveTo(143, 97, 199, 97),
+      #|  ClosePath,
+      #|  MoveTo(313, 53),
+      #|  LineTo(313, 53),
+      #|  LineTo(178, 53),
+      #|  QuadraticCurveTo(165, 53, 151, 56),
+      #|  QuadraticCurveTo(85, 13, 85, -46),
+      #|  QuadraticCurveTo(85, -94, 131, -122.5),
+      #|  QuadraticCurveTo(177, -151, 255, -151),
+      #|  QuadraticCurveTo(338, -151, 388, -119.5),
+      #|  QuadraticCurveTo(438, -88, 438, -36),
+      #|  QuadraticCurveTo(438, 53, 313, 53),
+      #|  ClosePath,
+      #|  MoveTo(387, 345),
+      #|  LineTo(387, 345),
+      #|  QuadraticCurveTo(387, 401, 353, 434),
+      #|  QuadraticCurveTo(319, 467, 262, 467),
+      #|  QuadraticCurveTo(205, 467, 171, 434),
+      #|  QuadraticCurveTo(137, 401, 137, 345),
+      #|  QuadraticCurveTo(137, 289, 171, 256),
+      #|  QuadraticCurveTo(205, 223, 262, 223),
+      #|  QuadraticCurveTo(319, 223, 353, 256),
+      #|  QuadraticCurveTo(387, 289, 387, 345),
+      #|  ClosePath,
+      #|  MoveTo(268, 671),
+      #|  LineTo(268, 671),
+      #|  LineTo(302, 650),
+      #|  QuadraticCurveTo(306, 640, 306, 631),
+      #|  QuadraticCurveTo(306, 590, 262, 590),
+      #|  QuadraticCurveTo(214, 590, 214, 645),
+      #|  QuadraticCurveTo(214, 669, 230, 707.5),
+      #|  QuadraticCurveTo(246, 746, 271, 780),
+      #|  QuadraticCurveTo(292, 777, 304, 765),
+      #|  QuadraticCurveTo(272, 707, 268, 671),
+      #|  ClosePath,
+      #|]
     ),
   )
 }
@@ -138,7 +200,7 @@ test "glyf/composite_g_cedilla" {
 ///|
 test "glyf/simple_g" {
   let data = Bytes::from_array(test_glyf_one_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // The font has simple glyphs as components
   // Check that glyph count is > 1 (has both simple and composite)
   assert_true(font.num_glyphs >= 3)

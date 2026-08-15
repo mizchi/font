@@ -33,7 +33,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
   let _search_range = reader.read_uint16()
   let _entry_selector = reader.read_uint16()
   let _range_shift = reader.read_uint16()
-  let tables : Map[String, TableRecord] = {}
+  let tables : Map[String, TableRecord] = Map([])
   for i = 0; i < num_tables; i = i + 1 {
     let tag = reader.read_tag()
     let _checksum = reader.read_uint32()

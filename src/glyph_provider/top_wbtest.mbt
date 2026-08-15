@@ -1,6 +1,6 @@
 ///|
 fn static_test_ttfont() -> @font.TTFont {
-  let cmap : Map[Int, Int] = {}
+  let cmap : Map[Int, Int] = Map([])
   cmap['A'.to_int()] = 1
   {
     units_per_em: 1000,
@@ -36,7 +36,7 @@ test "glyph_provider_from_font exposes weight-aware delegate" {
   match provider.get_glyph_by_weight {
     Some(glyph_by_weight) => {
       let (_, advance) = glyph_by_weight('A'.to_int(), 100.0, 500.0)
-      inspect(advance, content="50")
+      @debug.debug_inspect(advance, content="50")
     }
     None => fail("weight-aware font delegate is missing")
   }
@@ -45,5 +45,5 @@ test "glyph_provider_from_font exposes weight-aware delegate" {
 ///|
 test "axis_values_for_weight maps CSS font-weight to OpenType wght" {
   let axes = axis_values_for_weight(650.0)
-  inspect(axes.get("wght"), content="Some(650)")
+  @debug.debug_inspect(axes.get("wght"), content="Some(650)")
 }

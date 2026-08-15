@@ -71,7 +71,7 @@ pub fn parse_hmtx(
 /// Parse kern table (format 0, horizontal only): returns Map[key -> value]
 /// Key = (left_gid << 16) | right_gid
 pub fn parse_kern(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
-  let result : Map[Int, Int] = {}
+  let result : Map[Int, Int] = Map([])
   reader.seek(offset)
   let version = reader.read_uint16()
   if version == 0 {
@@ -143,7 +143,7 @@ pub fn parse_avar(
 /// Parse name table: returns Map[nameID -> string]
 /// Prefers platformID=3/encodingID=1 (Windows Unicode BMP, UTF-16BE)
 pub fn parse_name(reader : BinaryReader, offset : Int) -> Map[Int, String] {
-  let result : Map[Int, String] = {}
+  let result : Map[Int, String] = Map([])
   reader.seek(offset)
   let _format = reader.read_uint16()
   let count = reader.read_uint16()

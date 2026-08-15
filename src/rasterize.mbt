@@ -10,13 +10,13 @@ pub struct GlyphBitmap {
 }
 
 ///|
-pub impl Show for GlyphBitmap with output(self, logger) {
+pub impl Show for GlyphBitmap with fn output(self, logger) {
   logger.write_string("{width: ")
-  self.width.output(logger)
+  Show::output(self.width, logger)
   logger.write_string(", height: ")
-  self.height.output(logger)
+  Show::output(self.height, logger)
   logger.write_string(", pixels: ")
-  self.pixels.output(logger)
+  logger.write_string(@debug.to_string(self.pixels))
   logger.write_string("}")
 }
 

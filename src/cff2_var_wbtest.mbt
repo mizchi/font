@@ -70,23 +70,28 @@ let minimal_cff2_var_otf : FixedArray[Byte] = [
 ///|
 test "cff2var/parse_font_axes" {
   let data = Bytes::from_array(minimal_cff2_var_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   assert_true(font.var_axes.length() > 0)
   let axis = font.var_axes[0]
-  inspect(axis.tag, content="wght")
-  inspect(axis.min_value, content="100")
-  inspect(axis.default_value, content="400")
-  inspect(axis.max_value, content="900")
+  @debug.debug_inspect(
+    axis.tag,
+    content=(
+      #|"wght"
+    ),
+  )
+  @debug.debug_inspect(axis.min_value, content="100")
+  @debug.debug_inspect(axis.default_value, content="400")
+  @debug.debug_inspect(axis.max_value, content="900")
 }
 
 ///|
 test "cff2var/parse_ivs" {
   let data = Bytes::from_array(minimal_cff2_var_otf[:])
-  guard parse_font(data) is Some(font)
-  guard font.cff is Some(cff)
+  guard! parse_font(data) is Some(font)
+  guard! font.cff is Some(cff)
   assert_true(cff.is_cff2)
   assert_true(cff.ivs is Some(_))
-  guard cff.ivs is Some(ivs)
+  guard! cff.ivs is Some(ivs)
   assert_true(ivs.regions.length() > 0)
   assert_true(ivs.data.length() > 0)
 }
@@ -94,17 +99,17 @@ test "cff2var/parse_ivs" {
 ///|
 test "cff2var/default_instance" {
   let data = Bytes::from_array(minimal_cff2_var_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Default instance (wght=400) should give same result as non-var API
   let outline_default = font.char_outline(0x41)
   let outline_at = font.char_outline_at(0x41, { "wght": 400.0 })
-  inspect(outline_default.to_string(), content=outline_at.to_string())
+  @debug.debug_inspect(outline_default, content=@debug.to_string(outline_at))
 }
 
 ///|
 test "cff2var/bold_instance" {
   let data = Bytes::from_array(minimal_cff2_var_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.char_outline_at(0x41, { "wght": 900.0 })
   // Bold: (0,0) -> (300,800) -> (600,0)
   // fonttools optimized charstring: hmoveto, rlineto with blend, hlineto
@@ -123,7 +128,7 @@ test "cff2var/bold_instance" {
 ///|
 test "cff2var/mid_instance" {
   let data = Bytes::from_array(minimal_cff2_var_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // wght=650 is halfway between 400 and 900
   // normalized = (650-400)/(900-400) = 250/500 = 0.5
   // Y peak = 700 + 100*0.5 = 750

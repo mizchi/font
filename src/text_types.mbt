@@ -9,13 +9,13 @@ pub(all) struct FontKey {
 }
 
 ///|
-pub impl Show for FontKey with output(self, logger) {
+pub impl Show for FontKey with fn output(self, logger) {
   logger.write_string("{family: ")
-  self.family.output(logger)
+  Show::output(self.family, logger)
   logger.write_string(", weight: ")
-  self.weight.output(logger)
+  Show::output(self.weight, logger)
   logger.write_string(", italic: ")
-  self.italic.output(logger)
+  Show::output(self.italic, logger)
   logger.write_string("}")
 }
 
@@ -28,15 +28,15 @@ pub(all) struct TextStyle {
 }
 
 ///|
-pub impl Show for TextStyle with output(self, logger) {
+pub impl Show for TextStyle with fn output(self, logger) {
   logger.write_string("{font: ")
-  self.font.output(logger)
+  Show::output(self.font, logger)
   logger.write_string(", size_px: ")
-  self.size_px.output(logger)
+  Show::output(self.size_px, logger)
   logger.write_string(", line_height: ")
-  self.line_height.output(logger)
+  Show::output(self.line_height, logger)
   logger.write_string(", letter_spacing: ")
-  self.letter_spacing.output(logger)
+  Show::output(self.letter_spacing, logger)
   logger.write_string("}")
 }
 
@@ -48,13 +48,13 @@ pub(all) struct TextMetrics {
 }
 
 ///|
-pub impl Show for TextMetrics with output(self, logger) {
+pub impl Show for TextMetrics with fn output(self, logger) {
   logger.write_string("{width: ")
-  self.width.output(logger)
+  Show::output(self.width, logger)
   logger.write_string(", height: ")
-  self.height.output(logger)
+  Show::output(self.height, logger)
   logger.write_string(", baseline: ")
-  self.baseline.output(logger)
+  Show::output(self.baseline, logger)
   logger.write_string("}")
 }
 
@@ -72,25 +72,25 @@ pub(all) struct GlyphQuad {
 }
 
 ///|
-pub impl Show for GlyphQuad with output(self, logger) {
+pub impl Show for GlyphQuad with fn output(self, logger) {
   logger.write_string("{glyph_id: ")
-  self.glyph_id.output(logger)
+  Show::output(self.glyph_id, logger)
   logger.write_string(", atlas_x: ")
-  self.atlas_x.output(logger)
+  Show::output(self.atlas_x, logger)
   logger.write_string(", atlas_y: ")
-  self.atlas_y.output(logger)
+  Show::output(self.atlas_y, logger)
   logger.write_string(", atlas_w: ")
-  self.atlas_w.output(logger)
+  Show::output(self.atlas_w, logger)
   logger.write_string(", atlas_h: ")
-  self.atlas_h.output(logger)
+  Show::output(self.atlas_h, logger)
   logger.write_string(", dst_x: ")
-  self.dst_x.output(logger)
+  Show::output(self.dst_x, logger)
   logger.write_string(", dst_y: ")
-  self.dst_y.output(logger)
+  Show::output(self.dst_y, logger)
   logger.write_string(", dst_w: ")
-  self.dst_w.output(logger)
+  Show::output(self.dst_w, logger)
   logger.write_string(", dst_h: ")
-  self.dst_h.output(logger)
+  Show::output(self.dst_h, logger)
   logger.write_string("}")
 }
 
@@ -101,11 +101,11 @@ pub(all) struct TextRun {
 }
 
 ///|
-pub impl Show for TextRun with output(self, logger) {
+pub impl Show for TextRun with fn output(self, logger) {
   logger.write_string("{text: ")
-  self.text.output(logger)
+  Show::output(self.text, logger)
   logger.write_string(", style: ")
-  self.style.output(logger)
+  Show::output(self.style, logger)
   logger.write_string("}")
 }
 
@@ -135,7 +135,7 @@ pub enum FontFormat {
 } derive(Eq)
 
 ///|
-pub impl Show for FontFormat with output(self, logger) {
+pub impl Show for FontFormat with fn output(self, logger) {
   match self {
     TrueType => logger.write_string("TrueType")
     OpenType => logger.write_string("OpenType")
@@ -179,14 +179,14 @@ pub(all) struct AtlasPageInfo {
 }
 
 ///|
-pub impl Show for AtlasPageInfo with output(self, logger) {
+pub impl Show for AtlasPageInfo with fn output(self, logger) {
   logger.write_string("{page_id: ")
-  self.page_id.output(logger)
+  Show::output(self.page_id, logger)
   logger.write_string(", width: ")
-  self.width.output(logger)
+  Show::output(self.width, logger)
   logger.write_string(", height: ")
-  self.height.output(logger)
+  Show::output(self.height, logger)
   logger.write_string(", dirty: ")
-  self.dirty.output(logger)
+  Show::output(self.dirty, logger)
   logger.write_string("}")
 }

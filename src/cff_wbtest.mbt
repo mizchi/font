@@ -3,7 +3,7 @@ test "cff/parse_cff_index - empty" {
   let data = Bytes::from_array([b'\x00', b'\x00'])
   let reader = BinaryReader::new(data)
   let idx = parse_cff_index(reader)
-  inspect(idx.count(), content="0")
+  @debug.debug_inspect(idx.count(), content="0")
 }
 
 ///|
@@ -16,10 +16,10 @@ test "cff/parse_cff_index - single entry" {
   ])
   let reader = BinaryReader::new(data)
   let idx = parse_cff_index(reader)
-  inspect(idx.count(), content="1")
+  @debug.debug_inspect(idx.count(), content="1")
   let (off, len) = idx.entry(0)
-  inspect(len, content="3")
-  inspect(off, content="5")
+  @debug.debug_inspect(len, content="3")
+  @debug.debug_inspect(off, content="5")
 }
 
 ///|
@@ -32,11 +32,11 @@ test "cff/parse_cff_index - two entries" {
   ])
   let reader = BinaryReader::new(data)
   let idx = parse_cff_index(reader)
-  inspect(idx.count(), content="2")
+  @debug.debug_inspect(idx.count(), content="2")
   let (_, len0) = idx.entry(0)
   let (_, len1) = idx.entry(1)
-  inspect(len0, content="2")
-  inspect(len1, content="3")
+  @debug.debug_inspect(len0, content="2")
+  @debug.debug_inspect(len1, content="3")
 }
 
 ///|
@@ -47,7 +47,7 @@ test "cff/parse_cff_dict - simple operand" {
     ], // operator: 20
   )
   let dict = parse_cff_dict(data, 0, 2)
-  inspect(dict.get(20), content="Some([0])")
+  @debug.debug_inspect(dict.get(20), content="Some([0])")
 }
 
 ///|
@@ -58,7 +58,7 @@ test "cff/parse_cff_dict - negative operand" {
     ], // operator: 20
   )
   let dict = parse_cff_dict(data, 0, 2)
-  inspect(dict.get(20), content="Some([-100])")
+  @debug.debug_inspect(dict.get(20), content="Some([-100])")
 }
 
 ///|
@@ -70,15 +70,15 @@ test "cff/parse_cff_dict - two operands" {
     ], // operator: 18
   )
   let dict = parse_cff_dict(data, 0, 4)
-  inspect(dict.get(18), content="Some([100, 500])")
+  @debug.debug_inspect(dict.get(18), content="Some([100, 500])")
 }
 
 ///|
 test "cff/calc_subr_bias" {
-  inspect(calc_subr_bias(0), content="107")
-  inspect(calc_subr_bias(1239), content="107")
-  inspect(calc_subr_bias(1240), content="1131")
-  inspect(calc_subr_bias(33900), content="32768")
+  @debug.debug_inspect(calc_subr_bias(0), content="107")
+  @debug.debug_inspect(calc_subr_bias(1239), content="107")
+  @debug.debug_inspect(calc_subr_bias(1240), content="1131")
+  @debug.debug_inspect(calc_subr_bias(33900), content="32768")
 }
 
 ///|
@@ -94,7 +94,7 @@ test "cff/charstring_endchar_only" {
     ivs: None,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
-  inspect(cmds, content="[]")
+  @debug.debug_inspect(cmds, content="[]")
 }
 
 ///|
@@ -116,7 +116,7 @@ test "cff/charstring_rmoveto_endchar" {
     ivs: None,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
-  inspect(cmds, content="[MoveTo(100, 200), ClosePath]")
+  @debug.debug_inspect(cmds, content="[MoveTo(100, 200), ClosePath]")
 }
 
 ///|
@@ -142,9 +142,17 @@ test "cff/charstring_simple_rect" {
     ivs: None,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
-  inspect(
+  @debug.debug_inspect(
     cmds,
-    content="[MoveTo(0, 0), LineTo(100, 0), LineTo(100, 50), LineTo(0, 50), ClosePath]",
+    content=(
+      #|[
+      #|  MoveTo(0, 0),
+      #|  LineTo(100, 0),
+      #|  LineTo(100, 50),
+      #|  LineTo(0, 50),
+      #|  ClosePath,
+      #|]
+    ),
   )
 }
 
@@ -167,7 +175,7 @@ test "cff/charstring_rrcurveto" {
     ivs: None,
   }
   let cmds = cff_glyph_outline(data, cff, 0)
-  inspect(
+  @debug.debug_inspect(
     cmds,
     content="[MoveTo(0, 0), CurveTo(10, 20, 40, 60, 90, 120), ClosePath]",
   )
@@ -285,17 +293,17 @@ fn load_minimal_otf() -> Bytes {
 
 ///|
 test "cff/embedded_data_length" {
-  inspect(notosans_minimal_otf.length(), content="1364")
+  @debug.debug_inspect(notosans_minimal_otf.length(), content="1364")
 }
 
 ///|
 test "cff/parse_otf_font" {
   let data = load_minimal_otf()
-  inspect(data.length(), content="1364")
+  @debug.debug_inspect(data.length(), content="1364")
   let font = parse_font(data)
   assert_true(font is Some(_))
-  guard font is Some(f)
-  inspect(f.units_per_em, content="1000")
+  guard! font is Some(f)
+  @debug.debug_inspect(f.units_per_em, content="1000")
   assert_true(f.cff is Some(_))
   assert_true(f.num_glyphs > 0)
 }
@@ -303,19 +311,19 @@ test "cff/parse_otf_font" {
 ///|
 test "cff/otf_glyph_index" {
   let data = load_minimal_otf()
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // 'I' = U+0049 = 73
   let gid = font.glyph_index(73)
   assert_true(gid > 0)
   // Unmapped codepoints -> 0
   let notdef = font.glyph_index(0x9999)
-  inspect(notdef, content="0")
+  @debug.debug_inspect(notdef, content="0")
 }
 
 ///|
 test "cff/otf_glyph_outline_I" {
   let data = load_minimal_otf()
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // 'I' = U+0049 = 73
   let gid = font.glyph_index(73)
   let outline = font.glyph_outline(gid)
@@ -332,7 +340,7 @@ test "cff/otf_glyph_outline_I" {
 ///|
 test "cff/otf_glyph_metrics" {
   let data = load_minimal_otf()
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(73) // 'I'
   let m = font.glyph_metrics(gid)
   // NotoSans 'I' advance_width = 600 (monospace subset) or 298 (proportional)
@@ -342,7 +350,7 @@ test "cff/otf_glyph_metrics" {
 ///|
 test "cff/otf_scaled_outline" {
   let data = load_minimal_otf()
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.scaled_outline(73, 48.0) // 'I' at 48px
   assert_true(outline.length() > 0)
 }

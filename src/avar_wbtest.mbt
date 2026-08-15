@@ -74,15 +74,15 @@ let minimal_avar_ttf : FixedArray[Byte] = [
 ///|
 test "avar/parse_font" {
   let data = Bytes::from_array(minimal_avar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   assert_true(font.avar_segments.length() > 0)
-  inspect(font.avar_segments[0].length(), content="4")
+  @debug.debug_inspect(font.avar_segments[0].length(), content="4")
 }
 
 ///|
 test "avar/default_instance" {
   let data = Bytes::from_array(minimal_avar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Default instance (wght=400) should be unchanged
   let outline = font.char_outline_at(0x41, { "wght": 400.0 })
   let has_700 = outline
@@ -99,7 +99,7 @@ test "avar/default_instance" {
 ///|
 test "avar/bold_instance" {
   let data = Bytes::from_array(minimal_avar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Bold (wght=900) should reach peak Y=800
   let outline = font.char_outline_at(0x41, { "wght": 900.0 })
   let has_800 = outline
@@ -116,7 +116,7 @@ test "avar/bold_instance" {
 ///|
 test "avar/mid_with_avar" {
   let data = Bytes::from_array(minimal_avar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // wght=650 -> normalized 0.5 -> avar maps to 0.75 -> delta = 0.75 * 100 = 75 -> Y = 775
   let outline = font.char_outline_at(0x41, { "wght": 650.0 })
   let has_775 = outline
@@ -135,7 +135,7 @@ test "avar/segment_values" {
   // Verify parsed avar segment pairs match what we encoded:
   // (-1.0, -1.0), (0.0, 0.0), (0.5, 0.75), (1.0, 1.0)
   let data = Bytes::from_array(minimal_avar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let seg = font.avar_segments[0]
   let (f0, t0) = seg[0]
   assert_true(f0 < -0.99 && f0 > -1.01)
@@ -155,18 +155,18 @@ test "avar/segment_values" {
 test "apply_avar/empty_segment" {
   // Empty segment should return input unchanged
   let result = apply_avar(0.5, [])
-  inspect(result, content="0.5")
+  @debug.debug_inspect(result, content="0.5")
 }
 
 ///|
 test "apply_avar/identity" {
   // Identity mapping: input = output
   let segment : Array[(Double, Double)] = [(-1.0, -1.0), (0.0, 0.0), (1.0, 1.0)]
-  inspect(apply_avar(0.0, segment), content="0")
-  inspect(apply_avar(0.5, segment), content="0.5")
-  inspect(apply_avar(-0.5, segment), content="-0.5")
-  inspect(apply_avar(1.0, segment), content="1")
-  inspect(apply_avar(-1.0, segment), content="-1")
+  @debug.debug_inspect(apply_avar(0.0, segment), content="0")
+  @debug.debug_inspect(apply_avar(0.5, segment), content="0.5")
+  @debug.debug_inspect(apply_avar(-0.5, segment), content="-0.5")
+  @debug.debug_inspect(apply_avar(1.0, segment), content="1")
+  @debug.debug_inspect(apply_avar(-1.0, segment), content="-1")
 }
 
 ///|
@@ -178,28 +178,28 @@ test "apply_avar/nonlinear" {
     (0.5, 0.75),
     (1.0, 1.0),
   ]
-  inspect(apply_avar(0.5, segment), content="0.75")
+  @debug.debug_inspect(apply_avar(0.5, segment), content="0.75")
   // 0.25 should interpolate between (0.0, 0.0) and (0.5, 0.75) -> 0.375
-  inspect(apply_avar(0.25, segment), content="0.375")
+  @debug.debug_inspect(apply_avar(0.25, segment), content="0.375")
   // 0.75 should interpolate between (0.5, 0.75) and (1.0, 1.0) -> 0.875
-  inspect(apply_avar(0.75, segment), content="0.875")
+  @debug.debug_inspect(apply_avar(0.75, segment), content="0.875")
 }
 
 ///|
 test "apply_avar/clamp_beyond_range" {
   let segment : Array[(Double, Double)] = [(-1.0, -0.5), (0.0, 0.0), (1.0, 0.8)]
   // Below min: clamp to first 'to' value
-  inspect(apply_avar(-2.0, segment), content="-0.5")
+  @debug.debug_inspect(apply_avar(-2.0, segment), content="-0.5")
   // Above max: clamp to last 'to' value
-  inspect(apply_avar(2.0, segment), content="0.8")
+  @debug.debug_inspect(apply_avar(2.0, segment), content="0.8")
 }
 
 ///|
 test "avar/without_avar_font" {
   // gvar font without avar — avar_segments should be empty
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.avar_segments.length(), content="0")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.avar_segments.length(), content="0")
   // wght=650 -> normalized 0.5 -> no avar -> delta = 0.5 * 100 = 50 -> Y = 750
   let outline = font.char_outline_at(0x41, { "wght": 650.0 })
   let has_750 = outline

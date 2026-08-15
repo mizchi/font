@@ -47,8 +47,8 @@ test "system font candidates include broad CJK fallbacks" {
       joined = joined + path + "\n"
     }
   }
-  inspect(joined.contains("Arial Unicode"), content="true")
-  inspect(joined.contains("NotoSansCJK"), content="true")
+  @debug.debug_inspect(joined.contains("Arial Unicode"), content="true")
+  @debug.debug_inspect(joined.contains("NotoSansCJK"), content="true")
 }
 
 ///|
@@ -60,10 +60,10 @@ test "merged providers use bold provider for bold requests" {
   let (_, bold_advance) = (merged.get_glyph)('A'.to_int(), 16.0, true)
   let regular_kern = (merged.get_kern)('A'.to_int(), 'B'.to_int(), 16.0, false)
   let bold_kern = (merged.get_kern)('A'.to_int(), 'B'.to_int(), 16.0, true)
-  inspect(regular_advance, content="10")
-  inspect(bold_advance, content="20")
-  inspect(regular_kern, content="1")
-  inspect(bold_kern, content="2")
+  @debug.debug_inspect(regular_advance, content="10")
+  @debug.debug_inspect(bold_advance, content="20")
+  @debug.debug_inspect(regular_kern, content="1")
+  @debug.debug_inspect(bold_kern, content="2")
 }
 
 ///|
@@ -72,14 +72,14 @@ test "merged providers pass numeric weight to underlying provider" {
   match merged.get_glyph_by_weight {
     Some(glyph_by_weight) => {
       let (_, medium_advance) = glyph_by_weight('A'.to_int(), 16.0, 500.0)
-      inspect(medium_advance, content="5")
+      @debug.debug_inspect(medium_advance, content="5")
     }
     None => fail("merged provider must expose numeric weight glyph hook")
   }
   match merged.get_kern_by_weight {
     Some(kern_by_weight) => {
       let medium_kern = kern_by_weight('A'.to_int(), 'B'.to_int(), 16.0, 500.0)
-      inspect(medium_kern, content="0.5")
+      @debug.debug_inspect(medium_kern, content="0.5")
     }
     None => fail("merged provider must expose numeric weight kern hook")
   }
@@ -94,6 +94,6 @@ test "merged providers fall back when primary font misses a glyph" {
   ])
   let (_, latin_advance) = (merged.get_glyph)('A'.to_int(), 16.0, false)
   let (_, jp_advance) = (merged.get_glyph)(jp, 16.0, false)
-  inspect(latin_advance, content="10")
-  inspect(jp_advance, content="20")
+  @debug.debug_inspect(latin_advance, content="10")
+  @debug.debug_inspect(jp_advance, content="20")
 }

@@ -23,19 +23,19 @@ pub(all) struct GlyphCacheEntry {
 }
 
 ///|
-pub impl Show for GlyphCacheEntry with output(self, logger) {
+pub impl Show for GlyphCacheEntry with fn output(self, logger) {
   logger.write_string("{glyph_id: ")
-  self.glyph_id.output(logger)
+  Show::output(self.glyph_id, logger)
   logger.write_string(", atlas_x: ")
-  self.atlas_x.output(logger)
+  Show::output(self.atlas_x, logger)
   logger.write_string(", atlas_y: ")
-  self.atlas_y.output(logger)
+  Show::output(self.atlas_y, logger)
   logger.write_string(", atlas_w: ")
-  self.atlas_w.output(logger)
+  Show::output(self.atlas_w, logger)
   logger.write_string(", atlas_h: ")
-  self.atlas_h.output(logger)
+  Show::output(self.atlas_h, logger)
   logger.write_string(", atlas_page_id: ")
-  self.atlas_page_id.output(logger)
+  Show::output(self.atlas_page_id, logger)
   logger.write_string("}")
 }
 

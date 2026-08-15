@@ -2,7 +2,7 @@
 /// Parse cmap table: returns Map[codepoint -> glyph_id]
 /// Prefers Format 12 (full Unicode) over Format 4 (BMP only)
 pub fn parse_cmap(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
-  let result : Map[Int, Int] = {}
+  let result : Map[Int, Int] = Map([])
   reader.seek(offset)
   let _version = reader.read_uint16()
   let num_tables = reader.read_uint16()

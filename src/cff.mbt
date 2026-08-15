@@ -55,7 +55,7 @@ fn parse_cff_dict(
   offset : Int,
   length : Int,
 ) -> Map[Int, Array[Int]] {
-  let result : Map[Int, Array[Int]] = {}
+  let result : Map[Int, Array[Int]] = Map([])
   let reader = BinaryReader::at(data, offset)
   let end = offset + length
   let operands : Array[Int] = []

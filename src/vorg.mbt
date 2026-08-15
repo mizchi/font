@@ -16,7 +16,7 @@ pub fn TTFont::vert_origin_y(self : TTFont, glyph_id : Int) -> Int {
 pub fn parse_vorg(reader : BinaryReader, offset : Int) -> VorgData {
   let default_vert_origin_y = reader.peek_int16_at(offset + 4)
   let num_metrics = reader.peek_uint16_at(offset + 6)
-  let vert_origins : Map[Int, Int] = {}
+  let vert_origins : Map[Int, Int] = Map([])
   for i = 0; i < num_metrics; i = i + 1 {
     let rec_offset = offset + 8 + i * 4
     let glyph_index = reader.peek_uint16_at(rec_offset)

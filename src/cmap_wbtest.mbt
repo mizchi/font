@@ -59,41 +59,41 @@ let minimal_cmap12_ttf : FixedArray[Byte] = [
 ///|
 test "cmap12/parse_font" {
   let data = Bytes::from_array(minimal_cmap12_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.num_glyphs, content="3")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.num_glyphs, content="3")
 }
 
 ///|
 test "cmap12/bmp_char" {
   let data = Bytes::from_array(minimal_cmap12_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // A (U+0041) should map to glyph 1
   let gid = font.glyph_index(0x41)
-  inspect(gid, content="1")
+  @debug.debug_inspect(gid, content="1")
 }
 
 ///|
 test "cmap12/non_bmp_char" {
   let data = Bytes::from_array(minimal_cmap12_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Emoji U+1F600 should map to glyph 2
   let gid = font.glyph_index(0x1F600)
-  inspect(gid, content="2")
+  @debug.debug_inspect(gid, content="2")
 }
 
 ///|
 test "cmap12/unmapped_char" {
   let data = Bytes::from_array(minimal_cmap12_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Unmapped character should return 0
   let gid = font.glyph_index(0x42)
-  inspect(gid, content="0")
+  @debug.debug_inspect(gid, content="0")
 }
 
 ///|
 test "cmap12/outline_non_bmp" {
   let data = Bytes::from_array(minimal_cmap12_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Emoji glyph (square) should have outline commands
   let outline = font.char_outline(0x1F600)
   assert_true(outline.length() > 0)
@@ -103,18 +103,18 @@ test "cmap12/outline_non_bmp" {
 test "cmap/format4_fallback" {
   // gvar font uses only Format 4 (BMP only) - should still work after our changes
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(0x41) // 'A'
-  inspect(gid, content="1")
+  @debug.debug_inspect(gid, content="1")
 }
 
 ///|
 test "cmap/format4_kern_font" {
   // kern font uses Format 4 (BMP only)
   let data = Bytes::from_array(minimal_kern_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid_a = font.glyph_index(0x41) // 'A'
   let gid_v = font.glyph_index(0x56) // 'V'
-  inspect(gid_a, content="1")
-  inspect(gid_v, content="2")
+  @debug.debug_inspect(gid_a, content="1")
+  @debug.debug_inspect(gid_v, content="2")
 }

@@ -1,10 +1,10 @@
 ///|
 test "compute_path_bbox: empty commands" {
   let bbox = compute_path_bbox([])
-  inspect(bbox.x_min, content="0")
-  inspect(bbox.y_min, content="0")
-  inspect(bbox.x_max, content="0")
-  inspect(bbox.y_max, content="0")
+  @debug.debug_inspect(bbox.x_min, content="0")
+  @debug.debug_inspect(bbox.y_min, content="0")
+  @debug.debug_inspect(bbox.x_max, content="0")
+  @debug.debug_inspect(bbox.y_max, content="0")
 }
 
 ///|
@@ -17,10 +17,10 @@ test "compute_path_bbox: simple rect" {
     @svg.ClosePath,
   ]
   let bbox = compute_path_bbox(cmds)
-  inspect(bbox.x_min, content="10")
-  inspect(bbox.y_min, content="20")
-  inspect(bbox.x_max, content="100")
-  inspect(bbox.y_max, content="80")
+  @debug.debug_inspect(bbox.x_min, content="10")
+  @debug.debug_inspect(bbox.y_min, content="20")
+  @debug.debug_inspect(bbox.x_max, content="100")
+  @debug.debug_inspect(bbox.y_max, content="80")
 }
 
 ///|
@@ -32,11 +32,11 @@ test "compute_path_bbox: quadratic curve extrema" {
     @svg.QuadraticCurveTo(50.0, 100.0, 100.0, 0.0),
   ]
   let bbox = compute_path_bbox(cmds)
-  inspect(bbox.x_min, content="0")
-  inspect(bbox.y_min, content="0")
-  inspect(bbox.x_max, content="100")
+  @debug.debug_inspect(bbox.x_min, content="0")
+  @debug.debug_inspect(bbox.y_min, content="0")
+  @debug.debug_inspect(bbox.x_max, content="100")
   // y_max should be 50 (the extremum), ceil'd
-  inspect(bbox.y_max, content="50")
+  @debug.debug_inspect(bbox.y_max, content="50")
 }
 
 ///|
@@ -47,8 +47,8 @@ test "compute_path_bbox: cubic curve extrema" {
     @svg.CurveTo(0.0, 80.0, 100.0, -80.0, 100.0, 0.0),
   ]
   let bbox = compute_path_bbox(cmds)
-  inspect(bbox.x_min, content="0")
-  inspect(bbox.x_max, content="100")
+  @debug.debug_inspect(bbox.x_min, content="0")
+  @debug.debug_inspect(bbox.x_max, content="100")
   // y should extend beyond endpoints due to curve overshoot
   assert_true(bbox.y_max > 0)
   assert_true(bbox.y_min < 0)

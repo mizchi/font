@@ -988,7 +988,7 @@ fn bbox_size(outline : Array[@svg.PathCommand]) -> (Int, Int) {
 ///|
 test "cff_opcode/add" {
   let data = Bytes::from_array(cff_opcode_add_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)
@@ -1001,7 +1001,7 @@ test "cff_opcode/add" {
 ///|
 test "cff_opcode/sub" {
   let data = Bytes::from_array(cff_opcode_sub_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)
@@ -1014,7 +1014,7 @@ test "cff_opcode/sub" {
 ///|
 test "cff_opcode/mul" {
   let data = Bytes::from_array(cff_opcode_mul_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)
@@ -1027,7 +1027,7 @@ test "cff_opcode/mul" {
 ///|
 test "cff_opcode/div" {
   let data = Bytes::from_array(cff_opcode_div_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)
@@ -1040,7 +1040,7 @@ test "cff_opcode/div" {
 ///|
 test "cff_opcode/neg" {
   let data = Bytes::from_array(cff_opcode_neg_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)
@@ -1053,7 +1053,7 @@ test "cff_opcode/neg" {
 ///|
 test "cff_opcode/dup" {
   let data = Bytes::from_array(cff_opcode_dup_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)
@@ -1066,7 +1066,7 @@ test "cff_opcode/dup" {
 ///|
 test "cff_opcode/drop" {
   let data = Bytes::from_array(cff_opcode_drop_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // glyph for lowercase a (codepoint 97)
   let gid = font.glyph_index(97)
   assert_true(gid > 0)

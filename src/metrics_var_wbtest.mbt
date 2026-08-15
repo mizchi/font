@@ -1,33 +1,42 @@
 ///|
 test "glyph_metrics_at: non-variable font returns same as glyph_metrics" {
   let data = @fs.read_file_to_bytes("fixtures/NotoSansMono-Regular.ttf")
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(0x41) // 'A'
   let static_m = font.glyph_metrics(gid)
   let var_m = font.glyph_metrics_at(gid, {})
-  inspect(var_m.advance_width, content=static_m.advance_width.to_string())
-  inspect(
+  @debug.debug_inspect(
+    var_m.advance_width,
+    content=static_m.advance_width.to_string(),
+  )
+  @debug.debug_inspect(
     var_m.left_side_bearing,
     content=static_m.left_side_bearing.to_string(),
   )
-  inspect(var_m.bbox.x_min, content=static_m.bbox.x_min.to_string())
+  @debug.debug_inspect(
+    var_m.bbox.x_min,
+    content=static_m.bbox.x_min.to_string(),
+  )
 }
 
 ///|
 test "glyph_metrics_at: gvar default instance matches static" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(0x41)
   let static_m = font.glyph_metrics(gid)
   let var_m = font.glyph_metrics_at(gid, { "wght": 400.0 })
   // Advance should be same at default
-  inspect(var_m.advance_width, content=static_m.advance_width.to_string())
+  @debug.debug_inspect(
+    var_m.advance_width,
+    content=static_m.advance_width.to_string(),
+  )
 }
 
 ///|
 test "glyph_metrics_at: gvar bold instance has different bbox" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(0x41)
   let default_m = font.glyph_metrics_at(gid, { "wght": 400.0 })
   let bold_m = font.glyph_metrics_at(gid, { "wght": 900.0 })
@@ -38,7 +47,7 @@ test "glyph_metrics_at: gvar bold instance has different bbox" {
 ///|
 test "glyph_metrics_at: gvar mid instance interpolates bbox" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(0x41)
   let default_m = font.glyph_metrics_at(gid, { "wght": 400.0 })
   let mid_m = font.glyph_metrics_at(gid, { "wght": 650.0 })
@@ -51,8 +60,8 @@ test "glyph_metrics_at: gvar mid instance interpolates bbox" {
 ///|
 test "glyph_metrics_at: CFF font computes bbox" {
   let data = @fs.read_file_to_bytes("fixtures/NotoSans-subset.otf")
-  guard parse_font(data) is Some(font)
-  guard font.cff is Some(_)
+  guard! parse_font(data) is Some(font)
+  guard! font.cff is Some(_)
   let gid = font.glyph_index(0x41)
   if gid > 0 {
     let m = font.glyph_metrics_at(gid, {})
@@ -66,8 +75,8 @@ test "glyph_metrics_at: CFF font computes bbox" {
 ///|
 test "glyph_metrics_at: CFF2 var font computes variable bbox" {
   let data = @fs.read_file_to_bytes("fixtures/minimal-cff2-var.otf")
-  guard parse_font(data) is Some(font)
-  guard font.cff is Some(cff) && cff.ivs is Some(_)
+  guard! parse_font(data) is Some(font)
+  guard! font.cff is Some(cff) && cff.ivs is Some(_)
   let gid = font.glyph_index(0x41)
   if gid > 0 {
     let default_m = font.glyph_metrics_at(gid, {})

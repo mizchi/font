@@ -1,7 +1,7 @@
 ///|
 test "vlayout/basic_vertical" {
   let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let positions = font.layout_text_vertical("AB", 48.0)
   assert_eq(positions.length(), 2)
   // First glyph at y=0
@@ -13,7 +13,7 @@ test "vlayout/basic_vertical" {
 ///|
 test "vlayout/measure_vertical" {
   let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let h1 = font.measure_text_vertical("A", 48.0)
   let h2 = font.measure_text_vertical("AB", 48.0)
   // Two chars should be roughly twice one char
@@ -24,7 +24,7 @@ test "vlayout/measure_vertical" {
 ///|
 test "vlayout/empty_string" {
   let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let positions = font.layout_text_vertical("", 48.0)
   assert_eq(positions.length(), 0)
   let height = font.measure_text_vertical("", 48.0)
@@ -34,7 +34,7 @@ test "vlayout/empty_string" {
 ///|
 test "vlayout/monospace_uniform_height" {
   let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // In a monospace font without vmtx, all glyphs use units_per_em as advance height
   let positions = font.layout_text_vertical("Hello", 48.0)
   // Check all advances are equal

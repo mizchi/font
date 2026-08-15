@@ -50,22 +50,22 @@ let minimal_cff2_otf : FixedArray[Byte] = [
 ///|
 test "cff2/parse_font" {
   let data = Bytes::from_array(minimal_cff2_otf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.units_per_em, content="1000")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.units_per_em, content="1000")
   assert_true(font.cff is Some(_))
-  guard font.cff is Some(cff)
+  guard! font.cff is Some(cff)
   assert_true(cff.is_cff2)
-  inspect(cff.charstrings.count(), content="2")
+  @debug.debug_inspect(cff.charstrings.count(), content="2")
 }
 
 ///|
 test "cff2/glyph_outline_A" {
   let data = Bytes::from_array(minimal_cff2_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.char_outline(0x41) // 'A'
   assert_true(outline.length() > 0)
   // Triangle: (0,0) -> (300,700) -> (600,0)
-  inspect(
+  @debug.debug_inspect(
     outline,
     content="[MoveTo(0, 0), LineTo(300, 700), LineTo(600, 0), ClosePath]",
   )
@@ -74,16 +74,16 @@ test "cff2/glyph_outline_A" {
 ///|
 test "cff2/glyph_metrics_A" {
   let data = Bytes::from_array(minimal_cff2_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let gid = font.glyph_index(0x41) // 'A'
   let m = font.glyph_metrics(gid)
-  inspect(m.advance_width, content="600")
+  @debug.debug_inspect(m.advance_width, content="600")
 }
 
 ///|
 test "cff2/notdef_empty" {
   let data = Bytes::from_array(minimal_cff2_otf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.glyph_outline(0) // .notdef
-  inspect(outline, content="[]")
+  @debug.debug_inspect(outline, content="[]")
 }

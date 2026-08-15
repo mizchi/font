@@ -58,26 +58,26 @@ let minimal_kern_ttf : FixedArray[Byte] = [
 ///|
 test "kern/parse_font" {
   let data = Bytes::from_array(minimal_kern_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   assert_true(font.kern_pairs.length() > 0)
 }
 
 ///|
 test "kern/av_pair" {
   let data = Bytes::from_array(minimal_kern_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // A=gid1, V=gid2, kern value = -80
   let kern_val = font.kern_pair(1, 2)
-  inspect(kern_val, content="-80")
+  @debug.debug_inspect(kern_val, content="-80")
 }
 
 ///|
 test "kern/no_pair" {
   let data = Bytes::from_array(minimal_kern_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // Non-existent pair should return 0
   let kern_val = font.kern_pair(2, 1)
-  inspect(kern_val, content="0")
+  @debug.debug_inspect(kern_val, content="0")
 }
 
 ///|
@@ -144,36 +144,36 @@ let minimal_kern_multi_ttf : FixedArray[Byte] = [
 ///|
 test "kern/multi_pair_count" {
   let data = Bytes::from_array(minimal_kern_multi_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.kern_pairs.length(), content="3")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.kern_pairs.length(), content="3")
 }
 
 ///|
 test "kern/multi_av_pair" {
   let data = Bytes::from_array(minimal_kern_multi_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.kern_pair(1, 2), content="-80")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.kern_pair(1, 2), content="-80")
 }
 
 ///|
 test "kern/multi_aw_pair" {
   let data = Bytes::from_array(minimal_kern_multi_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.kern_pair(1, 3), content="-50")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.kern_pair(1, 3), content="-50")
 }
 
 ///|
 test "kern/multi_va_pair" {
   let data = Bytes::from_array(minimal_kern_multi_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.kern_pair(2, 1), content="-30")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.kern_pair(2, 1), content="-30")
 }
 
 ///|
 test "kern/no_kern_font" {
   // cmap12 font has no kern table
   let data = Bytes::from_array(minimal_cmap12_ttf[:])
-  guard parse_font(data) is Some(font)
-  inspect(font.kern_pairs.length(), content="0")
-  inspect(font.kern_pair(1, 2), content="0")
+  guard! parse_font(data) is Some(font)
+  @debug.debug_inspect(font.kern_pairs.length(), content="0")
+  @debug.debug_inspect(font.kern_pair(1, 2), content="0")
 }

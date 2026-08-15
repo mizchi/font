@@ -14,7 +14,7 @@ pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
   }
   let reader = BinaryReader::new(data)
   // Step 1: Build glyph ID set from codepoints
-  let glyph_set : Map[Int, Bool] = {}
+  let glyph_set : Map[Int, Bool] = Map([])
   glyph_set[0] = true // always include .notdef
   for cp in codepoints {
     let gid = font.glyph_index(cp)
@@ -30,7 +30,7 @@ pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
   old_gids.sort()
   let new_num_glyphs = old_gids.length()
   // Step 4: Build old->new glyph ID mapping
-  let gid_map : Map[Int, Int] = {}
+  let gid_map : Map[Int, Int] = Map([])
   for i, old_gid in old_gids {
     gid_map[old_gid] = i
   }

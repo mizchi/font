@@ -83,14 +83,14 @@ let minimal_ttc : FixedArray[Byte] = [
 ///|
 test "ttc/parse_collection" {
   let data = Bytes::from_array(minimal_ttc[:])
-  guard parse_font_collection(data) is Some(fonts)
+  guard! parse_font_collection(data) is Some(fonts)
   assert_eq(fonts.length(), 2)
 }
 
 ///|
 test "ttc/first_font_outline" {
   let data = Bytes::from_array(minimal_ttc[:])
-  guard parse_font_at(data, 0) is Some(font)
+  guard! parse_font_at(data, 0) is Some(font)
   let outline = font.char_outline(0x41)
   // Triangle: (0,0)->(300,700)->(600,0)
   let has_700 = outline
@@ -107,7 +107,7 @@ test "ttc/first_font_outline" {
 ///|
 test "ttc/second_font_outline" {
   let data = Bytes::from_array(minimal_ttc[:])
-  guard parse_font_at(data, 1) is Some(font)
+  guard! parse_font_at(data, 1) is Some(font)
   let outline = font.char_outline(0x41)
   // Square: (0,0)->(0,600)->(600,600)->(600,0)
   let has_600 = outline
@@ -134,7 +134,7 @@ test "ttc/second_font_outline" {
 ///|
 test "ttc/parse_font_returns_first" {
   let data = Bytes::from_array(minimal_ttc[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.char_outline(0x41)
   // Should get font 0 (triangle)
   let has_700 = outline

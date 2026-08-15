@@ -1,7 +1,7 @@
 ///|
 test "gasp/noto_sans_mono_absent" {
   let data = load_fixture("fixtures/NotoSansMono-Regular.ttf")
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   // NotoSansMono may not have gasp table - empty array is valid
   let _ = font.gasp
 }

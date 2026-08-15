@@ -28,4 +28,3 @@ pub fn GlyphProvider::from_font(@font.TTFont) -> Self
 // Type aliases
 
 // Traits
-

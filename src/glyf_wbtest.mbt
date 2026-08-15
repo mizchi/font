@@ -6,9 +6,17 @@ test "contours_to_path_commands - triangle (all on-curve)" {
     { x: 0, y: 200, on_curve: true },
   ]
   let cmds = contours_to_path_commands([contour])
-  inspect(
+  @debug.debug_inspect(
     cmds,
-    content="[MoveTo(100, 0), LineTo(100, 0), LineTo(200, 200), LineTo(0, 200), ClosePath]",
+    content=(
+      #|[
+      #|  MoveTo(100, 0),
+      #|  LineTo(100, 0),
+      #|  LineTo(200, 200),
+      #|  LineTo(0, 200),
+      #|  ClosePath,
+      #|]
+    ),
   )
 }
 
@@ -21,9 +29,16 @@ test "contours_to_path_commands - quadratic bezier" {
     { x: 100, y: 0, on_curve: true },
   ]
   let cmds = contours_to_path_commands([contour])
-  inspect(
+  @debug.debug_inspect(
     cmds,
-    content="[MoveTo(0, 0), LineTo(0, 0), QuadraticCurveTo(50, 100, 100, 0), ClosePath]",
+    content=(
+      #|[
+      #|  MoveTo(0, 0),
+      #|  LineTo(0, 0),
+      #|  QuadraticCurveTo(50, 100, 100, 0),
+      #|  ClosePath,
+      #|]
+    ),
   )
 }
 
@@ -38,9 +53,17 @@ test "contours_to_path_commands - implicit midpoints" {
     { x: 150, y: 0, on_curve: true },
   ]
   let cmds = contours_to_path_commands([contour])
-  inspect(
+  @debug.debug_inspect(
     cmds,
-    content="[MoveTo(0, 0), LineTo(0, 0), QuadraticCurveTo(50, 100, 75, 100), QuadraticCurveTo(100, 100, 150, 0), ClosePath]",
+    content=(
+      #|[
+      #|  MoveTo(0, 0),
+      #|  LineTo(0, 0),
+      #|  QuadraticCurveTo(50, 100, 75, 100),
+      #|  QuadraticCurveTo(100, 100, 150, 0),
+      #|  ClosePath,
+      #|]
+    ),
   )
 }
 
@@ -54,16 +77,25 @@ test "contours_to_path_commands - all off-curve" {
     { x: 0, y: 100, on_curve: false },
   ]
   let cmds = contours_to_path_commands([contour])
-  inspect(
+  @debug.debug_inspect(
     cmds,
-    content="[MoveTo(50, 50), QuadraticCurveTo(100, 0, 150, 50), QuadraticCurveTo(200, 100, 150, 150), QuadraticCurveTo(100, 200, 50, 150), QuadraticCurveTo(0, 100, 50, 50), ClosePath]",
+    content=(
+      #|[
+      #|  MoveTo(50, 50),
+      #|  QuadraticCurveTo(100, 0, 150, 50),
+      #|  QuadraticCurveTo(200, 100, 150, 150),
+      #|  QuadraticCurveTo(100, 200, 50, 150),
+      #|  QuadraticCurveTo(0, 100, 50, 50),
+      #|  ClosePath,
+      #|]
+    ),
   )
 }
 
 ///|
 test "contours_to_path_commands - empty" {
   let cmds = contours_to_path_commands([])
-  inspect(cmds, content="[]")
+  @debug.debug_inspect(cmds, content="[]")
 }
 
 ///|
@@ -74,7 +106,10 @@ test "scale_commands - basic scaling" {
     @svg.ClosePath,
   ]
   let scaled = scale_commands(commands, 0.5, false)
-  inspect(scaled, content="[MoveTo(50, 100), LineTo(150, 200), ClosePath]")
+  @debug.debug_inspect(
+    scaled,
+    content="[MoveTo(50, 100), LineTo(150, 200), ClosePath]",
+  )
 }
 
 ///|
@@ -85,5 +120,8 @@ test "scale_commands - with y flip" {
     @svg.ClosePath,
   ]
   let scaled = scale_commands(commands, 0.5, true)
-  inspect(scaled, content="[MoveTo(50, -100), LineTo(150, -200), ClosePath]")
+  @debug.debug_inspect(
+    scaled,
+    content="[MoveTo(50, -100), LineTo(150, -200), ClosePath]",
+  )
 }

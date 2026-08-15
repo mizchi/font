@@ -72,37 +72,42 @@ let minimal_gvar_ttf : FixedArray[Byte] = [
 ///|
 test "gvar/parse_font_axes" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   assert_true(font.var_axes.length() > 0)
   let axis = font.var_axes[0]
-  inspect(axis.tag, content="wght")
-  inspect(axis.min_value, content="100")
-  inspect(axis.default_value, content="400")
-  inspect(axis.max_value, content="900")
+  @debug.debug_inspect(
+    axis.tag,
+    content=(
+      #|"wght"
+    ),
+  )
+  @debug.debug_inspect(axis.min_value, content="100")
+  @debug.debug_inspect(axis.default_value, content="400")
+  @debug.debug_inspect(axis.max_value, content="900")
 }
 
 ///|
 test "gvar/parse_gvar_header" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
-  guard font.gvar is Some(gvar)
-  inspect(gvar.axis_count, content="1")
+  guard! parse_font(data) is Some(font)
+  guard! font.gvar is Some(gvar)
+  @debug.debug_inspect(gvar.axis_count, content="1")
   assert_true(gvar.glyph_offsets.length() > 0)
 }
 
 ///|
 test "gvar/default_instance" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline_default = font.char_outline(0x41)
   let outline_at = font.char_outline_at(0x41, { "wght": 400.0 })
-  inspect(outline_default.to_string(), content=outline_at.to_string())
+  @debug.debug_inspect(outline_default, content=@debug.to_string(outline_at))
 }
 
 ///|
 test "gvar/bold_instance" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.char_outline_at(0x41, { "wght": 900.0 })
   let has_800 = outline
     .iter()
@@ -118,7 +123,7 @@ test "gvar/bold_instance" {
 ///|
 test "gvar/mid_instance" {
   let data = Bytes::from_array(minimal_gvar_ttf[:])
-  guard parse_font(data) is Some(font)
+  guard! parse_font(data) is Some(font)
   let outline = font.char_outline_at(0x41, { "wght": 650.0 })
   let has_750 = outline
     .iter()
