@@ -1,6 +1,16 @@
 import { expect, test } from '@playwright/test';
 import type { FontMeasurement } from '../../browser/types.js';
 
+// FreeType rounds HVAR advance deltas to integer design units even with
+// geometricPrecision. Bound that platform effect by half a design unit per
+// glyph plus DOM serialization precision; keep static-font checks unchanged.
+// https://github.com/freetype/freetype/blob/master/src/truetype/ttgxvar.c
+function variationTolerance(result: FontMeasurement, unitsPerEm: number) {
+  return process.platform === 'linux'
+    ? Math.max(0.05, result.moonbit.glyphs.length * result.fontSize / unitsPerEm / 2 + 0.02)
+    : 0.05;
+}
+
 async function measure(page: import('@playwright/test').Page, text: string, fontSize = 13.25,
   options = {}, file = 'NotoSansMono-Regular.ttf'): Promise<FontMeasurement> {
   await page.goto('/');
@@ -218,7 +228,7 @@ for (const fontWeight of [100, 400, 700, 900]) {
       const result = await measure(page, 'Hello world office AV 123', size, { fontWeight }, 'shaping-reference/roboto-variable.ttf');
       expect(result.missingCodepoints).toEqual([]);
       expect(result.shaping.variations.wght).toBe(fontWeight);
-      expect(Math.abs(result.widthDelta)).toBeLessThan(0.05);
+      expect(Math.abs(result.widthDelta), `weight=${fontWeight}, size=${size}`).toBeLessThan(variationTolerance(result, 2048));
       for (const key of ['x', 'y', 'width', 'height'] as const) {
         expect(Math.abs(result.moonbit.ink_bounds![key] - result.canvas.inkBounds[key])).toBeLessThan(2);
       }
@@ -252,8 +262,9 @@ test('explicit width and optical-size axes agree with browser advances', async (
     } finally { font.dispose(); }
   });
   for (const result of results) {
-    expect(Math.abs(result.widthDelta)).toBeLessThan(0.05);
-    expect(Math.abs(result.dom.textBounds.width - result.moonbit.advance_width)).toBeLessThan(0.05);
+    const tolerance = variationTolerance(result, 1000);
+    expect(Math.abs(result.widthDelta), JSON.stringify(result.shaping.variations)).toBeLessThan(tolerance);
+    expect(Math.abs(result.dom.textBounds.width - result.moonbit.advance_width)).toBeLessThan(tolerance);
   }
   expect(results[0].shaping.variations.opsz).toBe(8);
   expect(results.map(result => result.shaping.variations.wdth)).toEqual([75, 100, 75, 75]);

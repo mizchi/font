@@ -365,6 +365,8 @@ The metric comparisons load identical font bytes into MoonBit and headless Chrom
 
 The DOM fit contract is tested in Chromium, Firefox and WebKit. Fit inspection retains the target element's actual `text-rendering` mode and native hinting. Cases cover interval boundaries, wrapped/unwrapped width, fixed-height/ancestor clipping, ellipsis policy, line clamp, white-space, Japanese punctuation, URLs/NBSP/ZWSP/soft hyphens, Flex/Grid allocation, icons/badges/pseudo-elements, inputs/textareas, real 400/700 face selection, font failures, mixed-script fallback, variable width/optical sizing, spacing, fractional sizes, zoom and explicit unsupported results. Canvas ink bounds differ across engines, particularly for mixed BiDi text; cross-engine MoonBit/Canvas ink parity is not asserted. CI installs all three engines and uploads reports/test attachments.
 
+On Linux, FreeType rounds HVAR advance deltas to integer font units. Variable-font comparisons therefore bound this backend difference by half a font unit per glyph, scaled by font size, plus 0.02px serialization precision (with a 0.05px minimum). Static-font comparisons and the actual DOM fit tolerance remain unchanged. MoonBit predictions are not used as exact browser overflow decisions.
+
 Each exported report records the font SHA-256, toolchain/browser versions and:
 
 | Data | Coordinates and meaning |

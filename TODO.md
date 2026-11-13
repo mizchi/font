@@ -39,7 +39,8 @@
    - `wdth`・`opsz`・`font-stretch`・自動光学サイズを検証する。
    - MoonBit の軸指定を JS の測定 API に接続し、選択された軸を結果に残す。
    - `shapeTextWithAxes` / 非同期 `measureWithAxes` / CLI の軸指定を追加。Roboto Serif の固定参照フォントも追加。
-   - 幅・光学サイズの明示指定は Chromium で幅差 0.05px 未満。自動光学サイズと CSS font-stretch は 3 エンジンで実測確認。
+   - 幅・光学サイズの明示指定は macOS Chromium で幅差 0.05px 未満。Linux の比較では FreeType の整数フォント単位への丸め上限を字数から計算する。DOM の収まり判定の許容幅は変更しない。
+   - 自動光学サイズと CSS font-stretch は 3 エンジンで実測確認。
 8. [x] 単純な拡大縮小・CSS zoom
    - 正の軸平行な scale / translate / zoom を共通座標に換算する。
    - 回転・傾斜・3D・反転は対象外として明示する。小数幅の境界も検証する。
