@@ -3,9 +3,9 @@
 /// Returns (glyf_data, loca_data, x_mins) or None on error.
 fn reconstruct_glyf_loca(
   data : Bytes,
-  src_offset : Int,
-  src_length : Int,
-) -> (Bytes, Bytes, Array[Int])? {
+  src_offset : Int32,
+  src_length : Int32,
+) -> (Bytes, Bytes, Array[Int32])? {
   ignore(src_length)
   let reader = BinaryReader::at(data, src_offset)
   // Transformed glyf header (36 bytes)
@@ -44,8 +44,8 @@ fn reconstruct_glyf_loca(
   bbox_reader.skip(bbox_bitmap_length)
   // Output
   let glyf_out : Array[Byte] = []
-  let loca_values : Array[Int] = Array::make(num_glyphs + 1, 0)
-  let x_mins : Array[Int] = Array::make(num_glyphs, 0)
+  let loca_values : Array[Int32] = Array::make(num_glyphs + 1, 0)
+  let x_mins : Array[Int32] = Array::make(num_glyphs, 0)
   // Process each glyph
   for glyph_id = 0; glyph_id < num_glyphs; glyph_id = glyph_id + 1 {
     loca_values[glyph_id] = glyf_out.length()
@@ -91,7 +91,7 @@ fn reconstruct_glyf_loca(
     } else {
       // Simple glyph
       let mut total_points = 0
-      let end_points : Array[Int] = Array::make(n_contours, 0)
+      let end_points : Array[Int32] = Array::make(n_contours, 0)
       let mut end_point = -1
       for c = 0; c < n_contours; c = c + 1 {
         let n = read_255ushort(n_points_reader)
@@ -248,9 +248,9 @@ fn read_composite_glyph(
 fn decode_triplets_to_truetype(
   flag_reader : BinaryReader,
   glyph_reader : BinaryReader,
-  n_points : Int,
+  n_points : Int32,
   has_overlap_bit : Bool,
-) -> (Array[Byte], Array[Byte], Array[Byte], Int, Int, Int, Int) {
+) -> (Array[Byte], Array[Byte], Array[Byte], Int32, Int32, Int32, Int32) {
   // TrueType simple glyph flag bits
   let tt_on_curve = 1
   let tt_x_short = 2
@@ -426,11 +426,11 @@ fn decode_triplets_to_truetype(
 /// Reconstruct hmtx table from WOFF2 transformed format
 fn reconstruct_hmtx(
   data : Bytes,
-  src_offset : Int,
-  src_length : Int,
-  num_glyphs : Int,
-  num_h_metrics : Int,
-  x_mins : Array[Int],
+  src_offset : Int32,
+  src_length : Int32,
+  num_glyphs : Int32,
+  num_h_metrics : Int32,
+  x_mins : Array[Int32],
 ) -> Bytes {
   ignore(src_length)
   let reader = BinaryReader::at(data, src_offset)
@@ -438,13 +438,13 @@ fn reconstruct_hmtx(
   let has_proportional_lsbs = (hmtx_flags & 1) == 0
   let has_monospace_lsbs = (hmtx_flags & 2) == 0
   // Read advance widths
-  let advance_widths : Array[Int] = Array::make(num_h_metrics, 0)
+  let advance_widths : Array[Int32] = Array::make(num_h_metrics, 0)
   for i = 0; i < num_h_metrics; i = i + 1 {
     advance_widths[i] = reader.read_uint16()
     ignore(i)
   }
   // Read LSBs
-  let lsbs : Array[Int] = Array::make(num_glyphs, 0)
+  let lsbs : Array[Int32] = Array::make(num_glyphs, 0)
   for i = 0; i < num_h_metrics; i = i + 1 {
     if has_proportional_lsbs {
       lsbs[i] = reader.read_int16()

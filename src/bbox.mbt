@@ -39,13 +39,13 @@ fn BBoxAccum::add(self : BBoxAccum, x : Double, y : Double) -> Unit {
 ///|
 fn BBoxAccum::to_bbox(self : BBoxAccum) -> GlyphBBox {
   if !self.has_points {
-    return { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+    return { x_min: 0, y_min: 0, x_max: 0, y_max: 0, }
   }
   {
-    x_min: self.x_min.to_int(),
-    y_min: self.y_min.to_int(),
-    x_max: (self.x_max + 0.999).to_int(),
-    y_max: (self.y_max + 0.999).to_int(),
+    x_min: self.x_min.floor().to_int(),
+    y_min: self.y_min.floor().to_int(),
+    x_max: self.x_max.ceil().to_int(),
+    y_max: self.y_max.ceil().to_int(),
   }
 }
 
@@ -53,15 +53,40 @@ fn BBoxAccum::to_bbox(self : BBoxAccum) -> GlyphBBox {
 /// Compute bounding box from path commands.
 /// Calculates exact bounds including cubic/quadratic bezier curve extrema.
 pub fn compute_path_bbox(cmds : Array[@svg.PathCommand]) -> GlyphBBox {
+  path_bounds_accum(cmds).to_bbox()
+}
+
+///|
+/// Tight path bounds in the path's coordinate system, without integer rounding.
+/// Returns None for an empty path.
+pub fn compute_path_bounds(cmds : Array[@svg.PathCommand]) -> TextRect? {
+  let acc = path_bounds_accum(cmds)
+  if !acc.has_points {
+    return None
+  }
+  Some({
+    x: acc.x_min,
+    y: acc.y_min,
+    width: acc.x_max - acc.x_min,
+    height: acc.y_max - acc.y_min,
+  })
+}
+
+///|
+fn path_bounds_accum(cmds : Array[@svg.PathCommand]) -> BBoxAccum {
   let acc = BBoxAccum::new()
   let mut cx = 0.0
   let mut cy = 0.0
+  let mut start_x = 0.0
+  let mut start_y = 0.0
   for cmd in cmds {
     match cmd {
       @svg.MoveTo(x, y) => {
         acc.add(x, y)
         cx = x
         cy = y
+        start_x = x
+        start_y = y
       }
       @svg.LineTo(x, y) => {
         acc.add(x, y)
@@ -80,11 +105,14 @@ pub fn compute_path_bbox(cmds : Array[@svg.PathCommand]) -> GlyphBBox {
         cx = x
         cy = y
       }
-      @svg.ClosePath => ()
+      @svg.ClosePath => {
+        cx = start_x
+        cy = start_y
+      }
       _ => ()
     }
   }
-  acc.to_bbox()
+  acc
 }
 
 ///|

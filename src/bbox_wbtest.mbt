@@ -1,4 +1,30 @@
 ///|
+test "compute_path_bounds: retain fractional curve extrema" {
+  guard! compute_path_bounds([
+      @svg.MoveTo(-0.25, -0.75),
+      @svg.QuadraticCurveTo(0.25, 1.75, 0.75, -0.75),
+    ])
+    is Some(bounds)
+  assert_eq(bounds.x, -0.25)
+  assert_eq(bounds.y, -0.75)
+  assert_eq(bounds.width, 1.0)
+  assert_eq(bounds.height, 1.25)
+  assert_true(compute_path_bounds([]) is None)
+}
+
+///|
+test "compute_path_bbox: round negative fractional bounds outward" {
+  let bbox = compute_path_bbox([
+    @svg.MoveTo(-10.25, -20.75),
+    @svg.LineTo(-2.25, -3.75),
+  ])
+  assert_eq(bbox.x_min, -11)
+  assert_eq(bbox.y_min, -21)
+  assert_eq(bbox.x_max, -2)
+  assert_eq(bbox.y_max, -3)
+}
+
+///|
 test "compute_path_bbox: empty commands" {
   let bbox = compute_path_bbox([])
   @debug.debug_inspect(bbox.x_min, content="0")

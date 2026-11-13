@@ -4,29 +4,37 @@ package "mizchi/font/js"
 // Values
 pub fn codepointCoverage() -> String
 
-pub fn fontName(Int) -> String
+pub fn fontName(Int32) -> String
 
-pub fn fontWeightClass() -> Int
+pub fn fontWeightClass() -> Int32
 
 pub fn getFontInfo() -> String
 
-pub fn glyphAdvance(Int, Double) -> Double
+pub fn glyphAdvance(Int32, Double) -> Double
 
 pub fn glyphIds() -> String
 
-pub fn glyphOutlineCommands(Int, Double) -> String
+pub fn glyphOutlineCommands(Int32, Double) -> String
 
-pub fn glyphToSvgPath(Int, Double) -> String
+pub fn glyphToSvgPath(Int32, Double) -> String
 
-pub fn isFixedPitch() -> Int
+pub fn isFixedPitch() -> Int32
 
-pub fn kernAdvance(Int, Int, Double) -> Double
+pub fn kernAdvance(Int32, Int32, Double) -> Double
 
 pub fn layoutText(String, Double) -> String
+
+pub fn layoutTextBounds(String, Double) -> String
 
 pub fn loadFont(Bytes) -> String
 
 pub fn measureText(String, Double) -> Double
+
+pub fn shapeText(String, Double, String, String, Bool, Bool) -> String
+
+pub fn shapeTextWithAxes(String, Double, String, String, Bool, Bool, Double, String) -> String
+
+pub fn shapeTextWithWeight(String, Double, String, String, Bool, Bool, Double) -> String
 
 pub fn tableSizes() -> String
 

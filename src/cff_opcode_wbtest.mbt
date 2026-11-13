@@ -944,7 +944,7 @@ let cff_opcode_drop_otf : FixedArray[Byte] = [
 ]
 
 ///|
-fn bbox_size(outline : Array[@svg.PathCommand]) -> (Int, Int) {
+fn bbox_size(outline : Array[@svg.PathCommand]) -> (Int32, Int32) {
   let mut min_x = 1.0e9
   let mut min_y = 1.0e9
   let mut max_x = -1.0e9

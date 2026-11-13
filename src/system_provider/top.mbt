@@ -75,7 +75,7 @@ fn provider_for_weight(
 ///|
 fn glyph_from_pair(
   pair : (@glyph_provider.GlyphProvider, @glyph_provider.GlyphProvider?),
-  codepoint : Int,
+  codepoint : Int32,
   font_size : Double,
   is_bold : Bool,
   font_weight : Double,
@@ -90,8 +90,8 @@ fn glyph_from_pair(
 ///|
 fn kern_from_pair(
   pair : (@glyph_provider.GlyphProvider, @glyph_provider.GlyphProvider?),
-  cp1 : Int,
-  cp2 : Int,
+  cp1 : Int32,
+  cp2 : Int32,
   font_size : Double,
   is_bold : Bool,
   font_weight : Double,
@@ -108,7 +108,7 @@ fn choose_glyph_by_weight(
   providers : Array[
     (@glyph_provider.GlyphProvider, @glyph_provider.GlyphProvider?),
   ],
-  codepoint : Int,
+  codepoint : Int32,
   font_size : Double,
   font_weight : Double,
 ) -> (Array[@svg.PathCommand], Double) {

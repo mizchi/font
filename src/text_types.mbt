@@ -4,7 +4,7 @@
 ///|
 pub(all) struct FontKey {
   family : String
-  weight : Int
+  weight : Int32
   italic : Bool
 }
 
@@ -60,7 +60,7 @@ pub impl Show for TextMetrics with fn output(self, logger) {
 
 ///|
 pub(all) struct GlyphQuad {
-  glyph_id : Int
+  glyph_id : Int32
   atlas_x : Double
   atlas_y : Double
   atlas_w : Double
@@ -111,13 +111,13 @@ pub impl Show for TextRun with fn output(self, logger) {
 
 ///|
 pub fn new_text_run(text : String, style : TextStyle) -> TextRun {
-  { text, style }
+  { text, style, }
 }
 
 ///|
 pub fn default_text_style(family : String, size_px : Double) -> TextStyle {
   {
-    font: { family, weight: 400, italic: false },
+    font: { family, weight: 400, italic: false, },
     size_px,
     line_height: size_px * 1.4,
     letter_spacing: 0.0,
@@ -125,6 +125,7 @@ pub fn default_text_style(family : String, size_px : Double) -> TextStyle {
 }
 
 ///|
+#derive(Eq)
 pub enum FontFormat {
   TrueType
   OpenType
@@ -132,7 +133,7 @@ pub enum FontFormat {
   Woff2
   TrueTypeCollection
   Unknown
-} derive(Eq)
+}
 
 ///|
 pub impl Show for FontFormat with fn output(self, logger) {
@@ -172,9 +173,9 @@ pub fn detect_font_format(data : Bytes) -> FontFormat {
 
 ///|
 pub(all) struct AtlasPageInfo {
-  page_id : Int
-  width : Int
-  height : Int
+  page_id : Int32
+  width : Int32
+  height : Int32
   dirty : Bool
 }
 
@@ -190,3 +191,27 @@ pub impl Show for AtlasPageInfo with fn output(self, logger) {
   Show::output(self.dirty, logger)
   logger.write_string("}")
 }
+
+///|
+pub extend FontKey with Show::{to_string, output}
+
+///|
+pub extend TextStyle with Show::{to_string, output}
+
+///|
+pub extend TextMetrics with Show::{to_string, output}
+
+///|
+pub extend GlyphQuad with Show::{to_string, output}
+
+///|
+pub extend TextRun with Show::{to_string, output}
+
+///|
+pub extend FontFormat with Show::{to_string, output}
+
+///|
+pub extend AtlasPageInfo with Show::{to_string, output}
+
+///|
+pub extend FontFormat with Eq::{equal, not_equal}

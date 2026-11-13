@@ -2,8 +2,8 @@
 /// Parse gvar table header, shared tuples, and glyph offsets
 fn parse_gvar(
   reader : BinaryReader,
-  offset : Int,
-  num_glyphs : Int,
+  offset : Int32,
+  num_glyphs : Int32,
 ) -> GvarData? {
   let r = BinaryReader::at(reader.data, offset)
   let _version_major = r.read_uint16()
@@ -16,7 +16,7 @@ fn parse_gvar(
   let glyph_var_data_array_offset = r.read_uint32()
   // Read glyph offsets
   let offsets_are_long = (flags & 1) != 0
-  let glyph_offsets : Array[Int] = []
+  let glyph_offsets : Array[Int32] = []
   for i = 0; i <= glyph_count; i = i + 1 {
     if offsets_are_long {
       glyph_offsets.push(r.read_uint32())
@@ -50,7 +50,7 @@ fn parse_gvar(
 ///|
 /// Unpack packed point numbers from gvar data.
 /// Returns empty array if all points are referenced.
-fn unpack_points(reader : BinaryReader) -> Array[Int] {
+fn unpack_points(reader : BinaryReader) -> Array[Int32] {
   let count_byte = reader.read_uint8()
   if count_byte == 0 {
     return [] // all points
@@ -60,7 +60,7 @@ fn unpack_points(reader : BinaryReader) -> Array[Int] {
   } else {
     count_byte
   }
-  let points : Array[Int] = Array::new(capacity=count)
+  let points : Array[Int32] = Array(capacity=count)
   let mut i = 0
   while i < count {
     let run_header = reader.read_uint8()
@@ -86,8 +86,8 @@ fn unpack_points(reader : BinaryReader) -> Array[Int] {
 
 ///|
 /// Unpack RLE-compressed deltas from gvar data
-fn unpack_deltas(reader : BinaryReader, count : Int) -> Array[Int] {
-  let deltas : Array[Int] = Array::new(capacity=count)
+fn unpack_deltas(reader : BinaryReader, count : Int32) -> Array[Int32] {
+  let deltas : Array[Int32] = Array(capacity=count)
   let mut i = 0
   while i < count {
     let run_header = reader.read_uint8()
@@ -112,14 +112,14 @@ fn unpack_deltas(reader : BinaryReader, count : Int) -> Array[Int] {
 /// IUP (Interpolation of Untouched Points) for a single contour.
 /// Given sparse delta assignments, interpolate deltas for unassigned points.
 fn iup_contour(
-  deltas : Array[Int],
-  coords : Array[Int],
-  end_point : Int,
-  start_point : Int,
+  deltas : Array[Int32],
+  coords : Array[Int32],
+  end_point : Int32,
+  start_point : Int32,
   touch_flags : Array[Bool],
 ) -> Unit {
   // Find touched points in this contour
-  let touched : Array[Int] = []
+  let touched : Array[Int32] = []
   for i = start_point; i <= end_point; i = i + 1 {
     if touch_flags[i] {
       touched.push(i)
@@ -165,7 +165,13 @@ fn iup_contour(
 
 ///|
 /// IUP interpolation helper
-fn iup_interpolate(coord : Int, c0 : Int, c1 : Int, d0 : Int, d1 : Int) -> Int {
+fn iup_interpolate(
+  coord : Int32,
+  c0 : Int32,
+  c1 : Int32,
+  d0 : Int32,
+  d1 : Int32,
+) -> Int32 {
   if c0 == c1 {
     if d0 == d1 {
       return d0
@@ -196,15 +202,15 @@ fn iup_interpolate(coord : Int, c0 : Int, c1 : Int, d0 : Int, d1 : Int) -> Int {
 fn apply_gvar_deltas(
   data : Bytes,
   gvar : GvarData,
-  glyph_id : Int,
+  glyph_id : Int32,
   coords : Array[Double],
-  x_coords : Array[Int],
-  y_coords : Array[Int],
-  end_points : Array[Int],
-) -> (Array[Int], Array[Int]) {
+  x_coords : Array[Int32],
+  y_coords : Array[Int32],
+  end_points : Array[Int32],
+) -> (Array[Int32], Array[Int32]) {
   let num_points = x_coords.length()
-  let dx_total : Array[Int] = Array::make(num_points, 0)
-  let dy_total : Array[Int] = Array::make(num_points, 0)
+  let dx_total : Array[Int32] = Array::make(num_points, 0)
+  let dy_total : Array[Int32] = Array::make(num_points, 0)
   if glyph_id >= gvar.glyph_offsets.length() - 1 {
     return (dx_total, dy_total)
   }
@@ -221,7 +227,7 @@ fn apply_gvar_deltas(
   // Shared points (if any)
   let serialized_data_start = var_offset + data_offset
   let ser_reader = BinaryReader::at(data, serialized_data_start)
-  let shared_points : Array[Int] = if has_shared_points {
+  let shared_points : Array[Int32] = if has_shared_points {
     unpack_points(ser_reader)
   } else {
     []
@@ -286,8 +292,8 @@ fn apply_gvar_deltas(
       }
     } else {
       // Sparse points: assign then IUP
-      let dx_work : Array[Int] = Array::make(num_points, 0)
-      let dy_work : Array[Int] = Array::make(num_points, 0)
+      let dx_work : Array[Int32] = Array::make(num_points, 0)
+      let dy_work : Array[Int32] = Array::make(num_points, 0)
       let touch_flags : Array[Bool] = Array::make(num_points, false)
       for i = 0; i < points.length(); i = i + 1 {
         let pi = points[i]

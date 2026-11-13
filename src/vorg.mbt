@@ -1,6 +1,6 @@
 ///|
 /// Get vertical origin Y for a glyph (design units)
-pub fn TTFont::vert_origin_y(self : TTFont, glyph_id : Int) -> Int {
+pub fn TTFont::vert_origin_y(self : TTFont, glyph_id : Int32) -> Int32 {
   match self.vorg {
     Some(vorg) =>
       match vorg.vert_origins.get(glyph_id) {
@@ -13,15 +13,15 @@ pub fn TTFont::vert_origin_y(self : TTFont, glyph_id : Int) -> Int {
 
 ///|
 /// Parse VORG table: returns VorgData with default origin and per-glyph overrides
-pub fn parse_vorg(reader : BinaryReader, offset : Int) -> VorgData {
+pub fn parse_vorg(reader : BinaryReader, offset : Int32) -> VorgData {
   let default_vert_origin_y = reader.peek_int16_at(offset + 4)
   let num_metrics = reader.peek_uint16_at(offset + 6)
-  let vert_origins : Map[Int, Int] = Map([])
+  let vert_origins : Map[Int32, Int32] = Map([])
   for i = 0; i < num_metrics; i = i + 1 {
     let rec_offset = offset + 8 + i * 4
     let glyph_index = reader.peek_uint16_at(rec_offset)
     let vert_origin_y = reader.peek_int16_at(rec_offset + 2)
     vert_origins[glyph_index] = vert_origin_y
   }
-  { default_vert_origin_y, vert_origins }
+  { default_vert_origin_y, vert_origins, }
 }

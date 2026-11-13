@@ -1,6 +1,6 @@
 ///|
 /// WOFF2 magic number: "wOF2" = 0x774F4632
-let woff2_magic : Int = 0x774F4632
+let woff2_magic : Int32 = 0x774F4632
 
 ///|
 /// Known table tags per WOFF2 spec, indexed 0-62
@@ -18,14 +18,14 @@ let known_tags : FixedArray[String] = [
 /// WOFF2 table directory entry
 priv struct Woff2TableEntry {
   tag : String
-  transform_version : Int
-  src_offset : Int
-  src_length : Int
+  transform_version : Int32
+  src_offset : Int32
+  src_length : Int32
 }
 
 ///|
 /// Read a UIntBase128-encoded value (1-5 bytes, big-endian base-128)
-fn read_uintbase128(reader : BinaryReader) -> Int? {
+fn read_uintbase128(reader : BinaryReader) -> Int32? {
   let mut result = 0
   for i = 0; i < 5; i = i + 1 {
     let b = reader.read_uint8()
@@ -46,7 +46,7 @@ fn read_uintbase128(reader : BinaryReader) -> Int? {
 
 ///|
 /// Read a 255UShort-encoded value (variable-length uint16)
-fn read_255ushort(reader : BinaryReader) -> Int {
+fn read_255ushort(reader : BinaryReader) -> Int32 {
   let code = reader.read_uint8()
   if code == 253 {
     reader.read_uint16()
@@ -61,7 +61,7 @@ fn read_255ushort(reader : BinaryReader) -> Int {
 
 ///|
 /// Append a big-endian int16 to an Array[Byte]
-fn write_be16_arr(out : Array[Byte], value : Int) -> Unit {
+fn write_be16_arr(out : Array[Byte], value : Int32) -> Unit {
   out.push(((value >> 8) & 0xFF).to_byte())
   out.push((value & 0xFF).to_byte())
 }
@@ -130,10 +130,10 @@ pub fn parse_woff2(data : Bytes) -> TTFont? {
     _ => return None
   }
   // Find special table entries
-  let mut glyf_idx : Int = -1
-  let mut loca_idx : Int = -1
-  let mut hhea_idx : Int = -1
-  let mut hmtx_idx : Int = -1
+  let mut glyf_idx : Int32 = -1
+  let mut loca_idx : Int32 = -1
+  let mut hhea_idx : Int32 = -1
+  let mut hmtx_idx : Int32 = -1
   for i = 0; i < entries.length(); i = i + 1 {
     let e = entries[i]
     if e.tag == "glyf" {
@@ -165,7 +165,7 @@ pub fn parse_woff2(data : Bytes) -> TTFont? {
   // Reconstruct glyf/loca if transformed
   let mut glyf_data : Bytes? = None
   let mut loca_data : Bytes? = None
-  let mut x_mins : Array[Int] = []
+  let mut x_mins : Array[Int32] = []
   if glyf_idx >= 0 && loca_idx >= 0 {
     let glyf_e = entries[glyf_idx]
     if glyf_e.transform_version == 0 {

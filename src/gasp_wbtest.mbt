@@ -9,7 +9,7 @@ test "gasp/noto_sans_mono_absent" {
 ///|
 test "gasp/parse_round_trip" {
   // Create a minimal gasp table: version=1, numRanges=2
-  let buf : Array[Byte] = Array::new(capacity=12)
+  let buf : Array[Byte] = Array(capacity=12)
   // version
   buf.push(b'\x00')
   buf.push(b'\x01')

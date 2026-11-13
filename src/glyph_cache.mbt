@@ -7,19 +7,19 @@
 /// Create a composite cache key from glyph_id and size_px.
 /// Quantizes size to 0.1px precision (supports sizes 0-4095px,
 /// glyph IDs 0-524287).
-pub fn make_glyph_cache_key(glyph_id : Int, size_px : Double) -> Int {
+pub fn make_glyph_cache_key(glyph_id : Int32, size_px : Double) -> Int32 {
   let size_quantized = (size_px * 10.0 + 0.5).to_int()
   glyph_id * 40960 + size_quantized
 }
 
 ///|
 pub(all) struct GlyphCacheEntry {
-  glyph_id : Int
+  glyph_id : Int32
   atlas_x : Double
   atlas_y : Double
   atlas_w : Double
   atlas_h : Double
-  atlas_page_id : Int
+  atlas_page_id : Int32
 }
 
 ///|
@@ -41,20 +41,20 @@ pub impl Show for GlyphCacheEntry with fn output(self, logger) {
 
 ///|
 pub struct GlyphCache {
-  entries : Map[Int, GlyphCacheEntry]
+  entries : Map[Int32, GlyphCacheEntry]
   mut next_x : Double
   mut next_y : Double
   mut row_height : Double
   atlas_width : Double
   atlas_height : Double
-  atlas_page_id : Int
+  atlas_page_id : Int32
 }
 
 ///|
 pub fn GlyphCache::new(
   atlas_width : Double,
   atlas_height : Double,
-  atlas_page_id : Int,
+  atlas_page_id : Int32,
 ) -> GlyphCache {
   {
     entries: {},
@@ -68,7 +68,7 @@ pub fn GlyphCache::new(
 }
 
 ///|
-pub fn GlyphCache::get(self : GlyphCache, glyph_id : Int) -> GlyphCacheEntry? {
+pub fn GlyphCache::get(self : GlyphCache, glyph_id : Int32) -> GlyphCacheEntry? {
   self.entries.get(glyph_id)
 }
 
@@ -77,7 +77,7 @@ pub fn GlyphCache::get(self : GlyphCache, glyph_id : Int) -> GlyphCacheEntry? {
 /// if the atlas is full.
 pub fn GlyphCache::allocate(
   self : GlyphCache,
-  glyph_id : Int,
+  glyph_id : Int32,
   width : Double,
   height : Double,
 ) -> GlyphCacheEntry? {
@@ -114,7 +114,7 @@ pub fn GlyphCache::allocate(
 }
 
 ///|
-pub fn GlyphCache::entry_count(self : GlyphCache) -> Int {
+pub fn GlyphCache::entry_count(self : GlyphCache) -> Int32 {
   self.entries.length()
 }
 
@@ -125,3 +125,6 @@ pub fn GlyphCache::clear(self : GlyphCache) -> Unit {
   self.next_y = 0.0
   self.row_height = 0.0
 }
+
+///|
+pub extend GlyphCacheEntry with Show::{to_string, output}

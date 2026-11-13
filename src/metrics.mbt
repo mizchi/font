@@ -1,6 +1,6 @@
 ///|
 /// Parse head table: returns (units_per_em, index_to_loc_format)
-pub fn parse_head(reader : BinaryReader, offset : Int) -> (Int, Int) {
+pub fn parse_head(reader : BinaryReader, offset : Int32) -> (Int32, Int32) {
   let units_per_em = reader.peek_uint16_at(offset + 18)
   let index_to_loc_format = reader.peek_int16_at(offset + 50)
   (units_per_em, index_to_loc_format)
@@ -8,13 +8,16 @@ pub fn parse_head(reader : BinaryReader, offset : Int) -> (Int, Int) {
 
 ///|
 /// Parse maxp table: returns num_glyphs
-pub fn parse_maxp(reader : BinaryReader, offset : Int) -> Int {
+pub fn parse_maxp(reader : BinaryReader, offset : Int32) -> Int32 {
   reader.peek_uint16_at(offset + 4)
 }
 
 ///|
 /// Parse hhea table: returns (ascent, descent, line_gap, num_h_metrics)
-pub fn parse_hhea(reader : BinaryReader, offset : Int) -> (Int, Int, Int, Int) {
+pub fn parse_hhea(
+  reader : BinaryReader,
+  offset : Int32,
+) -> (Int32, Int32, Int32, Int32) {
   let ascent = reader.peek_int16_at(offset + 4)
   let descent = reader.peek_int16_at(offset + 6)
   let line_gap = reader.peek_int16_at(offset + 8)
@@ -26,11 +29,11 @@ pub fn parse_hhea(reader : BinaryReader, offset : Int) -> (Int, Int, Int, Int) {
 /// Parse loca table: returns array of glyph offsets into glyf table
 pub fn parse_loca(
   reader : BinaryReader,
-  offset : Int,
-  num_glyphs : Int,
-  format : Int,
-) -> Array[Int] {
-  let loca = Array::new(capacity=num_glyphs + 1)
+  offset : Int32,
+  num_glyphs : Int32,
+  format : Int32,
+) -> Array[Int32] {
+  let loca = Array(capacity=num_glyphs + 1)
   reader.seek(offset)
   for i = 0; i <= num_glyphs; i = i + 1 {
     if format == 0 {
@@ -46,12 +49,12 @@ pub fn parse_loca(
 /// Parse hmtx table: returns (advance_widths, left_side_bearings)
 pub fn parse_hmtx(
   reader : BinaryReader,
-  offset : Int,
-  num_glyphs : Int,
-  num_h_metrics : Int,
-) -> (Array[Int], Array[Int]) {
-  let advance_widths = Array::new(capacity=num_glyphs)
-  let left_side_bearings = Array::new(capacity=num_glyphs)
+  offset : Int32,
+  num_glyphs : Int32,
+  num_h_metrics : Int32,
+) -> (Array[Int32], Array[Int32]) {
+  let advance_widths = Array(capacity=num_glyphs)
+  let left_side_bearings = Array(capacity=num_glyphs)
   reader.seek(offset)
   let mut last_advance = 0
   for i = 0; i < num_glyphs; i = i + 1 {
@@ -70,8 +73,8 @@ pub fn parse_hmtx(
 ///|
 /// Parse kern table (format 0, horizontal only): returns Map[key -> value]
 /// Key = (left_gid << 16) | right_gid
-pub fn parse_kern(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
-  let result : Map[Int, Int] = Map([])
+pub fn parse_kern(reader : BinaryReader, offset : Int32) -> Map[Int32, Int32] {
+  let result : Map[Int32, Int32] = Map([])
   reader.seek(offset)
   let version = reader.read_uint16()
   if version == 0 {
@@ -110,8 +113,8 @@ pub fn parse_kern(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
 /// Parse avar table: returns per-axis segment maps
 pub fn parse_avar(
   reader : BinaryReader,
-  offset : Int,
-  axis_count : Int,
+  offset : Int32,
+  axis_count : Int32,
 ) -> Array[Array[(Double, Double)]] {
   let segments : Array[Array[(Double, Double)]] = []
   reader.seek(offset)
@@ -142,15 +145,15 @@ pub fn parse_avar(
 ///|
 /// Parse name table: returns Map[nameID -> string]
 /// Prefers platformID=3/encodingID=1 (Windows Unicode BMP, UTF-16BE)
-pub fn parse_name(reader : BinaryReader, offset : Int) -> Map[Int, String] {
-  let result : Map[Int, String] = Map([])
+pub fn parse_name(reader : BinaryReader, offset : Int32) -> Map[Int32, String] {
+  let result : Map[Int32, String] = Map([])
   reader.seek(offset)
   let _format = reader.read_uint16()
   let count = reader.read_uint16()
   let string_offset = reader.read_uint16()
   let storage_offset = offset + string_offset
   // Collect records, prioritize Windows Unicode
-  let records : Array[(Int, Int, Int, Int, Int, Int)] = []
+  let records : Array[(Int32, Int32, Int32, Int32, Int32, Int32)] = []
   for i = 0; i < count; i = i + 1 {
     let platform_id = reader.read_uint16()
     let encoding_id = reader.read_uint16()
@@ -191,7 +194,11 @@ pub fn parse_name(reader : BinaryReader, offset : Int) -> Map[Int, String] {
 }
 
 ///|
-fn decode_utf16be(reader : BinaryReader, offset : Int, length : Int) -> String {
+fn decode_utf16be(
+  reader : BinaryReader,
+  offset : Int32,
+  length : Int32,
+) -> String {
   let chars : Array[Char] = []
   let num_units = length / 2
   for i = 0; i < num_units; i = i + 1 {
@@ -201,21 +208,25 @@ fn decode_utf16be(reader : BinaryReader, offset : Int, length : Int) -> String {
       let lo = reader.peek_uint16_at(offset + (i + 1) * 2)
       if lo >= 0xDC00 && lo <= 0xDFFF {
         let cp = 0x10000 + ((code_unit - 0xD800) << 10) + (lo - 0xDC00)
-        chars.push(Int::unsafe_to_char(cp))
+        chars.push(Int32::unsafe_to_char(cp))
         continue i + 2
       }
     }
-    chars.push(Int::unsafe_to_char(code_unit))
+    chars.push(Int32::unsafe_to_char(code_unit))
   }
   String::from_array(chars)
 }
 
 ///|
-fn decode_ascii(reader : BinaryReader, offset : Int, length : Int) -> String {
+fn decode_ascii(
+  reader : BinaryReader,
+  offset : Int32,
+  length : Int32,
+) -> String {
   let chars : Array[Char] = []
   for i = 0; i < length; i = i + 1 {
     let b = reader.data[offset + i].to_int()
-    chars.push(Int::unsafe_to_char(b))
+    chars.push(Int32::unsafe_to_char(b))
     ignore(i)
   }
   String::from_array(chars)
@@ -223,7 +234,7 @@ fn decode_ascii(reader : BinaryReader, offset : Int, length : Int) -> String {
 
 ///|
 /// Parse fvar table: returns array of variation axes
-pub fn parse_fvar(reader : BinaryReader, offset : Int) -> Array[VarAxis] {
+pub fn parse_fvar(reader : BinaryReader, offset : Int32) -> Array[VarAxis] {
   reader.seek(offset)
   let _major = reader.read_uint16()
   let _minor = reader.read_uint16()
@@ -240,7 +251,7 @@ pub fn parse_fvar(reader : BinaryReader, offset : Int) -> Array[VarAxis] {
     let max_value = reader.read_f16dot16()
     let _flags = reader.read_uint16()
     let _name_id = reader.read_uint16()
-    axes.push({ tag, min_value, default_value, max_value })
+    axes.push({ tag, min_value, default_value, max_value, })
     ignore(i)
   }
   axes

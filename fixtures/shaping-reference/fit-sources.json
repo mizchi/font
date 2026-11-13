@@ -1,0 +1,37 @@
+[
+  {
+    "file": "serif-bold.ttf",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSerif/NotoSerif-Bold.ttf",
+    "source_sha256": "3b2086a869bcded2aeb4416fc281ceec9d6ce3c06756cda19f8f763636204e7d",
+    "subset_sha256": "a438d9ee873ac1dfc03a042327867e94adc67fb288ef3abc50b27fe23a1d0482",
+    "sample_text": "Hello world office AV To WMW iii 0123456789 1/2 ág"
+  },
+  {
+    "file": "serif-italic.ttf",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSerif/NotoSerif-Italic.ttf",
+    "source_sha256": "0ea81d6b54fc8aa5dff0fd6ebe7cfa431e9e6cf747a8d4aa33581fa0aaccffea",
+    "subset_sha256": "fcd93844961b54c0c727f809d290dc08335710aa3dc33d01e4fa4d5caea7f3c0",
+    "sample_text": "Hello world office AV To WMW iii 0123456789 1/2 ág"
+  },
+  {
+    "file": "roboto-variable.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/roboto/Roboto%5Bwdth,wght%5D.ttf",
+    "source_sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134",
+    "subset_sha256": "2eb0923b0d9f378486c2663d78e7c0d17324004e7192c96aeb789923ceaab7a2",
+    "sample_text": "Hello world office AV To WMW iii 0123456789 1/2 ág"
+  },
+  {
+    "file": "robotoserif-variable.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/robotoserif/RobotoSerif%5BGRAD,opsz,wdth,wght%5D.ttf",
+    "source_sha256": "351ced75f3851806aa6d846b669361521eb1925cfc530396df9c1a1b77061ddb",
+    "subset_sha256": "4e731b2168813d61cc105e946607adc47c2a0312bcbbc67e0bb66c07c60cd7ed",
+    "sample_text": "Hello world office AV To WMW iii 0123456789 1/2 ág"
+  },
+  {
+    "file": "japanese-variable.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/5dac96833c85ada9384fe3e50b11df08091b9246/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf",
+    "source_sha256": "c2f3b4d463500a2ddcd3849cded1fceeb9fd6d1c32e6cbecd568453ba50fc68f",
+    "subset_sha256": "a17e7dc9e192345cd5b17b4f57590a1b4ad3a1a9c0b06f9a14fa25ee0813d46e",
+    "sample_text": "日本語のテキスト幅検査。折り返しを確認します。英語ABC 123"
+  }
+]

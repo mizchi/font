@@ -128,8 +128,8 @@ pub fn TTFont::measure_text_vertical(
 
 ///|
 /// Convert String to array of Unicode codepoints (handling surrogate pairs)
-fn string_to_codepoints(s : String) -> Array[Int] {
-  let result : Array[Int] = []
+fn string_to_codepoints(s : String) -> Array[Int32] {
+  let result : Array[Int32] = []
   let len = s.length()
   let mut i = 0
   while i < len {

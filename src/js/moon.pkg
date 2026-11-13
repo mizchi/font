@@ -1,6 +1,7 @@
 import {
   "mizchi/font",
   "mizchi/svg",
+  "moonbitlang/core/json",
 }
 
 options(
@@ -16,6 +17,10 @@ options(
         "kernAdvance",
         "layoutText",
         "measureText",
+        "layoutTextBounds",
+        "shapeText",
+        "shapeTextWithWeight",
+        "shapeTextWithAxes",
         "fontWeightClass",
         "isFixedPitch",
         "codepointCoverage",

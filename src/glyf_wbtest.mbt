@@ -1,9 +1,9 @@
 ///|
 test "contours_to_path_commands - triangle (all on-curve)" {
   let contour : Array[GlyphPoint] = [
-    { x: 100, y: 0, on_curve: true },
-    { x: 200, y: 200, on_curve: true },
-    { x: 0, y: 200, on_curve: true },
+    { x: 100, y: 0, on_curve: true, },
+    { x: 200, y: 200, on_curve: true, },
+    { x: 0, y: 200, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   @debug.debug_inspect(
@@ -24,9 +24,9 @@ test "contours_to_path_commands - triangle (all on-curve)" {
 test "contours_to_path_commands - quadratic bezier" {
   // on-curve, off-curve, on-curve
   let contour : Array[GlyphPoint] = [
-    { x: 0, y: 0, on_curve: true },
-    { x: 50, y: 100, on_curve: false },
-    { x: 100, y: 0, on_curve: true },
+    { x: 0, y: 0, on_curve: true, },
+    { x: 50, y: 100, on_curve: false, },
+    { x: 100, y: 0, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   @debug.debug_inspect(
@@ -47,10 +47,10 @@ test "contours_to_path_commands - implicit midpoints" {
   // on-curve, off-curve, off-curve, on-curve
   // Should create implicit on-curve midpoint between two off-curve points
   let contour : Array[GlyphPoint] = [
-    { x: 0, y: 0, on_curve: true },
-    { x: 50, y: 100, on_curve: false },
-    { x: 100, y: 100, on_curve: false },
-    { x: 150, y: 0, on_curve: true },
+    { x: 0, y: 0, on_curve: true, },
+    { x: 50, y: 100, on_curve: false, },
+    { x: 100, y: 100, on_curve: false, },
+    { x: 150, y: 0, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   @debug.debug_inspect(
@@ -71,10 +71,10 @@ test "contours_to_path_commands - implicit midpoints" {
 test "contours_to_path_commands - all off-curve" {
   // All off-curve: should start from midpoint of first and last
   let contour : Array[GlyphPoint] = [
-    { x: 100, y: 0, on_curve: false },
-    { x: 200, y: 100, on_curve: false },
-    { x: 100, y: 200, on_curve: false },
-    { x: 0, y: 100, on_curve: false },
+    { x: 100, y: 0, on_curve: false, },
+    { x: 200, y: 100, on_curve: false, },
+    { x: 100, y: 200, on_curve: false, },
+    { x: 0, y: 100, on_curve: false, },
   ]
   let cmds = contours_to_path_commands([contour])
   @debug.debug_inspect(

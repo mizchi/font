@@ -1,6 +1,6 @@
 ///|
 fn stub_provider(
-  missing_codepoint : Int,
+  missing_codepoint : Int32,
   base_advance : Double,
 ) -> @glyph_provider.GlyphProvider {
   {

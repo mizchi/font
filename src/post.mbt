@@ -39,8 +39,8 @@ let mac_glyph_names : Array[String] = [
 /// Parse post table
 pub fn parse_post(
   reader : BinaryReader,
-  offset : Int,
-  num_glyphs : Int,
+  offset : Int32,
+  num_glyphs : Int32,
 ) -> PostTable {
   // Fixed-point 16.16 italic angle at offset+4
   // Read italic angle as signed f16dot16
@@ -60,7 +60,7 @@ pub fn parse_post(
     let name_count = reader.peek_uint16_at(offset + 32)
     let count = if name_count < num_glyphs { name_count } else { num_glyphs }
     // glyphNameIndex array at offset+34
-    let indices : Array[Int] = []
+    let indices : Array[Int32] = []
     for i in 0..<count {
       indices.push(reader.peek_uint16_at(offset + 34 + i * 2))
     }
@@ -83,7 +83,7 @@ pub fn parse_post(
       let chars : Array[Char] = []
       for j in 0..<str_len {
         chars.push(
-          Int::unsafe_to_char(reader.data[str_offset + 1 + j].to_int()),
+          Int32::unsafe_to_char(reader.data[str_offset + 1 + j].to_int()),
         )
       }
       extra_names.push(String::from_array(chars))

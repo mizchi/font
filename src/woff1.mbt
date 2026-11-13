@@ -1,6 +1,6 @@
 ///|
 /// WOFF1 magic number: "wOFF" = 0x774F4646
-let woff1_magic : Int = 0x774F4646
+let woff1_magic : Int32 = 0x774F4646
 
 ///|
 /// Parse a WOFF1 font, decompress tables, rebuild sfnt, and delegate to parse_ttf
@@ -24,7 +24,7 @@ pub fn parse_woff1(data : Bytes) -> TTFont? {
   let _priv_offset = reader.read_uint32()
   let _priv_length = reader.read_uint32()
   // Read table directory entries (20 bytes each)
-  let entries : Array[(String, Int, Int, Int)] = [] // (tag, offset, compLength, origLength)
+  let entries : Array[(String, Int32, Int32, Int32)] = [] // (tag, offset, compLength, origLength)
   for i = 0; i < num_tables; i = i + 1 {
     let tag = reader.read_tag()
     let offset = reader.read_uint32()

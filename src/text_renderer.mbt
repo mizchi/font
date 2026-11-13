@@ -6,19 +6,19 @@
 pub struct TextRenderer {
   mut pages : Array[GlyphAtlas]
   font : TTFont
-  pipeline_id : Int
-  atlas_size : Int
-  base_page_id : Int
-  max_pages : Int
-  mut generation : Int
+  pipeline_id : Int32
+  atlas_size : Int32
+  base_page_id : Int32
+  max_pages : Int32
+  mut generation : Int32
 }
 
 ///|
 pub fn TextRenderer::new(
   font : TTFont,
-  atlas_size : Int,
-  base_page_id : Int,
-  pipeline_id : Int,
+  atlas_size : Int32,
+  base_page_id : Int32,
+  pipeline_id : Int32,
 ) -> TextRenderer {
   TextRenderer::new_with_options(
     font, atlas_size, base_page_id, pipeline_id, 16,
@@ -28,10 +28,10 @@ pub fn TextRenderer::new(
 ///|
 pub fn TextRenderer::new_with_options(
   font : TTFont,
-  atlas_size : Int,
-  base_page_id : Int,
-  pipeline_id : Int,
-  max_pages : Int,
+  atlas_size : Int32,
+  base_page_id : Int32,
+  pipeline_id : Int32,
+  max_pages : Int32,
 ) -> TextRenderer {
   {
     pages: [GlyphAtlas::new(atlas_size, atlas_size, base_page_id)],
@@ -57,7 +57,7 @@ pub fn TextRenderer::measure(
   let descent = -self.font.descent.to_double() /
     self.font.units_per_em.to_double() *
     size_px
-  { width, height: ascent + descent, baseline: ascent }
+  { width, height: ascent + descent, baseline: ascent, }
 }
 
 ///|
@@ -66,12 +66,12 @@ pub fn TextRenderer::get_atlas(self : TextRenderer) -> GlyphAtlas {
 }
 
 ///|
-pub fn TextRenderer::get_page_id(self : TextRenderer) -> Int {
+pub fn TextRenderer::get_page_id(self : TextRenderer) -> Int32 {
   self.base_page_id
 }
 
 ///|
-pub fn TextRenderer::glyph_count(self : TextRenderer) -> Int {
+pub fn TextRenderer::glyph_count(self : TextRenderer) -> Int32 {
   let mut total = 0
   for page in self.pages {
     total += page.cache.entry_count()
@@ -93,18 +93,18 @@ pub fn TextRenderer::clear(self : TextRenderer) -> Unit {
 }
 
 ///|
-pub fn TextRenderer::page_count(self : TextRenderer) -> Int {
+pub fn TextRenderer::page_count(self : TextRenderer) -> Int32 {
   self.pages.length()
 }
 
 ///|
-pub fn TextRenderer::get_page(self : TextRenderer, index : Int) -> GlyphAtlas {
+pub fn TextRenderer::get_page(self : TextRenderer, index : Int32) -> GlyphAtlas {
   self.pages[index]
 }
 
 ///|
-pub fn TextRenderer::get_page_ids(self : TextRenderer) -> Array[Int] {
-  let ids : Array[Int] = []
+pub fn TextRenderer::get_page_ids(self : TextRenderer) -> Array[Int32] {
+  let ids : Array[Int32] = []
   for page in self.pages {
     ids.push(page.cache.atlas_page_id)
   }
@@ -135,9 +135,9 @@ pub fn TextRenderer::flush_dirty_pages(
 /// Used by GPU renderers to build draw commands.
 pub fn TextRenderer::ensure_glyph(
   self : TextRenderer,
-  codepoint : Int,
+  codepoint : Int32,
   size_px : Double,
-) -> (Int, GlyphCacheEntry)? {
+) -> (Int32, GlyphCacheEntry)? {
   self.generation += 1
   let glyph_id = self.font.glyph_index(codepoint)
   let cache_key = make_glyph_cache_key(glyph_id, size_px)

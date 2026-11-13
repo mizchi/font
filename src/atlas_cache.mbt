@@ -6,14 +6,14 @@
 ///          entries..., pixels...]
 
 ///|
-let cache_magic : Int = 0x47_4C_43_41 // "GLCA"
+let cache_magic : Int32 = 0x47_4C_43_41 // "GLCA"
 
 ///|
 /// Serialize a GlyphAtlas to a flat Int array for persistent caching.
-pub fn GlyphAtlas::serialize(self : GlyphAtlas) -> Array[Int] {
+pub fn GlyphAtlas::serialize(self : GlyphAtlas) -> Array[Int32] {
   let cache = self.cache
   let entry_count = cache.entry_count()
-  let result : Array[Int] = []
+  let result : Array[Int32] = []
   // Header
   result.push(cache_magic)
   result.push(self.width)
@@ -41,7 +41,7 @@ pub fn GlyphAtlas::serialize(self : GlyphAtlas) -> Array[Int] {
 
 ///|
 /// Deserialize a GlyphAtlas from a flat Int array.
-pub fn GlyphAtlas::deserialize(data : Array[Int]) -> GlyphAtlas? {
+pub fn GlyphAtlas::deserialize(data : Array[Int32]) -> GlyphAtlas? {
   if data.length() < 11 {
     return None
   }
@@ -90,7 +90,7 @@ pub fn GlyphAtlas::deserialize(data : Array[Int]) -> GlyphAtlas? {
   }
   // Read pixels
   let pixel_count = width * height * 4
-  let pixels : Array[Int] = Array::make(pixel_count, 0)
+  let pixels : Array[Int32] = Array::make(pixel_count, 0)
   for i = 0; i < pixel_count; i = i + 1 {
     if pos + i < data.length() {
       pixels[i] = data[pos + i]
@@ -108,8 +108,10 @@ pub fn GlyphAtlas::deserialize(data : Array[Int]) -> GlyphAtlas? {
 
 ///|
 /// Serialize all pages of a TextRenderer.
-pub fn TextRenderer::serialize_cache(self : TextRenderer) -> Array[Array[Int]] {
-  let result : Array[Array[Int]] = []
+pub fn TextRenderer::serialize_cache(
+  self : TextRenderer,
+) -> Array[Array[Int32]] {
+  let result : Array[Array[Int32]] = []
   for page in self.pages {
     if page.cache.entry_count() > 0 {
       result.push(page.serialize())
@@ -123,8 +125,8 @@ pub fn TextRenderer::serialize_cache(self : TextRenderer) -> Array[Array[Int]] {
 /// Returns number of pages loaded.
 pub fn TextRenderer::load_cache(
   self : TextRenderer,
-  pages_data : Array[Array[Int]],
-) -> Int {
+  pages_data : Array[Array[Int32]],
+) -> Int32 {
   let mut loaded = 0
   for data in pages_data {
     match GlyphAtlas::deserialize(data) {
@@ -144,7 +146,7 @@ pub fn TextRenderer::load_cache(
 
 ///|
 /// Encode a Double as two Ints: integer part and fractional part (×1000000).
-fn push_f64(arr : Array[Int], value : Double) -> Unit {
+fn push_f64(arr : Array[Int32], value : Double) -> Unit {
   let int_part = value.to_int()
   let frac_part = ((value - int_part.to_double()) * 1000000.0).to_int()
   arr.push(int_part)
@@ -153,6 +155,6 @@ fn push_f64(arr : Array[Int], value : Double) -> Unit {
 
 ///|
 /// Decode a Double from two Ints (integer + fractional×1000000).
-fn read_f64(data : Array[Int], pos : Int) -> Double {
+fn read_f64(data : Array[Int32], pos : Int32) -> Double {
   data[pos].to_double() + data[pos + 1].to_double() / 1000000.0
 }

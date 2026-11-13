@@ -1,13 +1,13 @@
 ///|
 /// Parse OS/2 table
-pub fn parse_os2(reader : BinaryReader, offset : Int) -> OS2Table {
+pub fn parse_os2(reader : BinaryReader, offset : Int32) -> OS2Table {
   let version = reader.peek_uint16_at(offset)
   // xAvgCharWidth(2) + usWeightClass(2) + usWidthClass(2)
   let us_weight_class = reader.peek_uint16_at(offset + 4)
   let us_width_class = reader.peek_uint16_at(offset + 6)
   let fs_type = reader.peek_uint16_at(offset + 8)
   // PANOSE: 10 bytes at offset+32
-  let panose : FixedArray[Int] = FixedArray::make(10, 0)
+  let panose : FixedArray[Int32] = FixedArray::make(10, 0)
   for i in 0..<10 {
     panose[i] = reader.data[offset + 32 + i].to_int()
   }

@@ -1,0 +1,2 @@
+# Preserve upstream license files verbatim, including CRLF and trailing spaces.
+fixtures/shaping-reference/*OFL.txt -text -whitespace

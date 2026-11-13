@@ -1,7 +1,21 @@
 {
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "build:browser": "moon build --target js --release",
+    "test:browser": "playwright test",
+    "measure:browser": "node scripts/measure-browser.ts",
+    "check:browser": "tsc --noEmit",
+    "check:fit": "node scripts/check-fit.ts"
+  },
   "devDependencies": {
-    "brotli": "^1.3.3"
+    "@playwright/test": "1.65.0",
+    "@types/node": "^24.0.0",
+    "brotli": "^1.3.3",
+    "typescript": "~7.0.2"
   }
 }

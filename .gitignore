@@ -1,6 +1,8 @@
 _build/
 target
 node_modules/
+test-results/
+playwright-report/
 .mooncakes/
 fixtures/Noto*
 fixtures/woff2_brotli_stream.br

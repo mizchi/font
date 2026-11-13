@@ -4,9 +4,9 @@
 ///|
 /// Rasterized glyph pixel data (RGBA8 flat array: [r,g,b,a, r,g,b,a, ...]).
 pub struct GlyphBitmap {
-  width : Int
-  height : Int
-  pixels : Array[Int]
+  width : Int32
+  height : Int32
+  pixels : Array[Int32]
 }
 
 ///|
@@ -112,7 +112,7 @@ pub fn outline_bbox(
 /// Returns None for glyphs with no outline (e.g., space).
 pub fn rasterize_glyph(
   font : TTFont,
-  codepoint : Int,
+  codepoint : Int32,
   size_px : Double,
 ) -> GlyphBitmap? {
   let outline = font.scaled_outline(codepoint, size_px)
@@ -143,7 +143,7 @@ pub fn rasterize_glyph(
     @svg.Color::white(),
     transform~,
   )
-  let pixels : Array[Int] = []
+  let pixels : Array[Int32] = []
   for i = 0; i < img.pixels.length(); i = i + 1 {
     let color = img.pixels[i]
     pixels.push(color.r)
@@ -151,17 +151,17 @@ pub fn rasterize_glyph(
     pixels.push(color.b)
     pixels.push(color.a)
   }
-  Some({ width: img.width, height: img.height, pixels })
+  Some({ width: img.width, height: img.height, pixels, })
 }
 
 ///|
 /// Copy a GlyphBitmap into a larger pixel array at the given position.
 pub fn blit_to_atlas(
-  atlas_pixels : Array[Int],
-  atlas_width : Int,
+  atlas_pixels : Array[Int32],
+  atlas_width : Int32,
   src : GlyphBitmap,
-  dst_x : Int,
-  dst_y : Int,
+  dst_x : Int32,
+  dst_y : Int32,
 ) -> Unit {
   let atlas_height = atlas_pixels.length() / (atlas_width * 4)
   let mut src_x_start = 0
@@ -194,3 +194,6 @@ pub fn blit_to_atlas(
     )
   }
 }
+
+///|
+pub extend GlyphBitmap with Show::{to_string, output}

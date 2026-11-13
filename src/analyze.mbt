@@ -1,8 +1,8 @@
 ///|
 pub(all) struct TableInfo {
   tag : String
-  offset : Int
-  length : Int
+  offset : Int32
+  length : Int32
 }
 
 ///|
@@ -23,7 +23,7 @@ pub fn analyze_tables(data : Bytes) -> Array[TableInfo]? {
     let _checksum = reader.read_uint32()
     let offset = reader.read_uint32()
     let length = reader.read_uint32()
-    tables.push({ tag, offset, length })
+    tables.push({ tag, offset, length, })
     ignore(i)
   }
   Some(tables)
@@ -31,14 +31,14 @@ pub fn analyze_tables(data : Bytes) -> Array[TableInfo]? {
 
 ///|
 /// Get all glyph IDs in the font (0 to num_glyphs-1)
-pub fn TTFont::glyph_ids(self : TTFont) -> Array[Int] {
+pub fn TTFont::glyph_ids(self : TTFont) -> Array[Int32] {
   Array::makei(self.num_glyphs, fn(i) { i })
 }
 
 ///|
 /// Get all codepoints covered by the font's cmap
-pub fn TTFont::codepoint_coverage(self : TTFont) -> Array[Int] {
-  let cps : Array[Int] = []
+pub fn TTFont::codepoint_coverage(self : TTFont) -> Array[Int32] {
+  let cps : Array[Int32] = []
   self.cmap.each(fn(cp, _gid) { cps.push(cp) })
   cps.sort()
   cps

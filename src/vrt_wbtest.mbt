@@ -2,10 +2,10 @@
 /// Render path commands to an @svg.Image
 fn render_commands_to_image(
   cmds : Array[@svg.PathCommand],
-  width : Int,
-  height : Int,
-  offset_x : Int,
-  offset_y : Int,
+  width : Int32,
+  height : Int32,
+  offset_x : Int32,
+  offset_y : Int32,
 ) -> @svg.Image {
   let img = @svg.Image::new(width, height)
   let setter = @svg.PixelSetter::{
@@ -37,8 +37,8 @@ fn svg_image_to_pixelmatch(img : @svg.Image) -> @pixelmatch.Image {
 ///|
 /// Compact image representation for snapshot testing.
 /// Maps pixel brightness to density chars.
-fn image_to_ascii(img : @svg.Image, step : Int) -> String {
-  let buf = StringBuilder::new()
+fn image_to_ascii(img : @svg.Image, step : Int32) -> String {
+  let buf = StringBuilder()
   for y = 0; y < img.height; y = y + step {
     for x = 0; x < img.width; x = x + step {
       let c = img.get_pixel(x, y)
@@ -64,9 +64,9 @@ fn image_to_ascii(img : @svg.Image, step : Int) -> String {
 ///|
 test "vrt/triangle" {
   let contour : Array[GlyphPoint] = [
-    { x: 10, y: 0, on_curve: true },
-    { x: 20, y: 20, on_curve: true },
-    { x: 0, y: 20, on_curve: true },
+    { x: 10, y: 0, on_curve: true, },
+    { x: 20, y: 20, on_curve: true, },
+    { x: 0, y: 20, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   let img = render_commands_to_image(cmds, 24, 24, 0, 0)
@@ -82,9 +82,9 @@ test "vrt/triangle" {
 ///|
 test "vrt/quadratic_curve" {
   let contour : Array[GlyphPoint] = [
-    { x: 0, y: 0, on_curve: true },
-    { x: 15, y: 30, on_curve: false },
-    { x: 30, y: 0, on_curve: true },
+    { x: 0, y: 0, on_curve: true, },
+    { x: 15, y: 30, on_curve: false, },
+    { x: 30, y: 0, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   let img = render_commands_to_image(cmds, 32, 32, 0, 0)
@@ -100,10 +100,10 @@ test "vrt/quadratic_curve" {
 ///|
 test "vrt/circle_approximation" {
   let contour : Array[GlyphPoint] = [
-    { x: 100, y: 0, on_curve: false },
-    { x: 200, y: 100, on_curve: false },
-    { x: 100, y: 200, on_curve: false },
-    { x: 0, y: 100, on_curve: false },
+    { x: 100, y: 0, on_curve: false, },
+    { x: 200, y: 100, on_curve: false, },
+    { x: 100, y: 200, on_curve: false, },
+    { x: 0, y: 100, on_curve: false, },
   ]
   let cmds = contours_to_path_commands([contour])
   let scaled = scale_commands(cmds, 0.15, false)
@@ -120,9 +120,9 @@ test "vrt/circle_approximation" {
 ///|
 test "vrt/pixelmatch_identical" {
   let contour : Array[GlyphPoint] = [
-    { x: 10, y: 0, on_curve: true },
-    { x: 20, y: 20, on_curve: true },
-    { x: 0, y: 20, on_curve: true },
+    { x: 10, y: 0, on_curve: true, },
+    { x: 20, y: 20, on_curve: true, },
+    { x: 0, y: 20, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   let img1 = render_commands_to_image(cmds, 24, 24, 0, 0)
@@ -136,14 +136,14 @@ test "vrt/pixelmatch_identical" {
 ///|
 test "vrt/pixelmatch_different" {
   let contour1 : Array[GlyphPoint] = [
-    { x: 10, y: 0, on_curve: true },
-    { x: 20, y: 20, on_curve: true },
-    { x: 0, y: 20, on_curve: true },
+    { x: 10, y: 0, on_curve: true, },
+    { x: 20, y: 20, on_curve: true, },
+    { x: 0, y: 20, on_curve: true, },
   ]
   let contour2 : Array[GlyphPoint] = [
-    { x: 12, y: 0, on_curve: true },
-    { x: 22, y: 20, on_curve: true },
-    { x: 2, y: 20, on_curve: true },
+    { x: 12, y: 0, on_curve: true, },
+    { x: 22, y: 20, on_curve: true, },
+    { x: 2, y: 20, on_curve: true, },
   ]
   let cmds1 = contours_to_path_commands([contour1])
   let cmds2 = contours_to_path_commands([contour2])
@@ -160,12 +160,12 @@ test "vrt/pixelmatch_different" {
 test "vrt/scaled_glyph_like_shape" {
   // Simulate a glyph-like shape: letter "L" outline
   let contour : Array[GlyphPoint] = [
-    { x: 0, y: 0, on_curve: true },
-    { x: 5, y: 0, on_curve: true },
-    { x: 5, y: 18, on_curve: true },
-    { x: 15, y: 18, on_curve: true },
-    { x: 15, y: 22, on_curve: true },
-    { x: 0, y: 22, on_curve: true },
+    { x: 0, y: 0, on_curve: true, },
+    { x: 5, y: 0, on_curve: true, },
+    { x: 5, y: 18, on_curve: true, },
+    { x: 15, y: 18, on_curve: true, },
+    { x: 15, y: 22, on_curve: true, },
+    { x: 0, y: 22, on_curve: true, },
   ]
   let cmds = contours_to_path_commands([contour])
   let img = render_commands_to_image(cmds, 20, 24, 0, 0)

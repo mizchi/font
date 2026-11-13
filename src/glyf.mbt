@@ -2,9 +2,9 @@
 /// Parse raw glyph point data: coordinates, flags, and contour endpoints
 fn parse_glyph_points(
   reader : BinaryReader,
-  num_contours : Int,
-) -> (Array[Int], Array[Int], Array[Int], Array[Int]) {
-  let end_points = Array::new(capacity=num_contours)
+  num_contours : Int32,
+) -> (Array[Int32], Array[Int32], Array[Int32], Array[Int32]) {
+  let end_points = Array(capacity=num_contours)
   for i = 0; i < num_contours; i = i + 1 {
     end_points.push(reader.read_uint16())
     ignore(i)
@@ -16,7 +16,7 @@ fn parse_glyph_points(
   }
   let instruction_length = reader.read_uint16()
   reader.skip(instruction_length)
-  let flags = Array::new(capacity=num_points)
+  let flags = Array(capacity=num_points)
   let mut i = 0
   while i < num_points {
     let flag = reader.read_uint8()
@@ -30,7 +30,7 @@ fn parse_glyph_points(
     }
     i = i + 1
   }
-  let x_coords = Array::new(capacity=num_points)
+  let x_coords = Array(capacity=num_points)
   let mut x = 0
   for i = 0; i < num_points; i = i + 1 {
     let flag = flags[i]
@@ -50,7 +50,7 @@ fn parse_glyph_points(
     }
     x_coords.push(x)
   }
-  let y_coords = Array::new(capacity=num_points)
+  let y_coords = Array(capacity=num_points)
   let mut y = 0
   for i = 0; i < num_points; i = i + 1 {
     let flag = flags[i]
@@ -76,10 +76,10 @@ fn parse_glyph_points(
 ///|
 /// Assemble contours from raw point data
 fn assemble_contours(
-  x_coords : Array[Int],
-  y_coords : Array[Int],
-  flags : Array[Int],
-  end_points : Array[Int],
+  x_coords : Array[Int32],
+  y_coords : Array[Int32],
+  flags : Array[Int32],
+  end_points : Array[Int32],
 ) -> Array[Array[GlyphPoint]] {
   let contours : Array[Array[GlyphPoint]] = []
   let mut start = 0
@@ -102,7 +102,7 @@ fn assemble_contours(
 /// Parse a simple glyph from the glyf table
 fn parse_simple_glyph(
   reader : BinaryReader,
-  num_contours : Int,
+  num_contours : Int32,
 ) -> Array[Array[GlyphPoint]] {
   let (x_coords, y_coords, flags, end_points) = parse_glyph_points(
     reader, num_contours,
@@ -304,7 +304,7 @@ pub fn scale_commands(
 ///|
 fn glyph_outline_by_id(
   font : TTFont,
-  glyph_id : Int,
+  glyph_id : Int32,
 ) -> Array[@svg.PathCommand] {
   if glyph_id < 0 || glyph_id >= font.num_glyphs {
     return []
@@ -326,7 +326,7 @@ fn glyph_outline_by_id(
 ///|
 fn glyph_outline_by_id_var(
   font : TTFont,
-  glyph_id : Int,
+  glyph_id : Int32,
   scalars : Array[Double],
 ) -> Array[@svg.PathCommand] {
   if glyph_id < 0 || glyph_id >= font.num_glyphs {
@@ -342,7 +342,7 @@ fn glyph_outline_by_id_var(
 /// Get glyf outline with gvar variation applied
 fn glyf_outline_by_id_var_gvar(
   font : TTFont,
-  glyph_id : Int,
+  glyph_id : Int32,
   coords : Array[Double],
 ) -> Array[@svg.PathCommand] {
   let glyf_offset = font.loca[glyph_id]
@@ -369,18 +369,26 @@ fn glyf_outline_by_id_var_gvar(
       assemble_contours(x_coords, y_coords, flags, end_points),
     )
   }
+  // gvar serializes four phantom points after the outline points. Include them
+  // when decoding X and Y runs so phantom X deltas are not consumed as Y deltas.
+  let x_with_phantom = x_coords.copy()
+  let y_with_phantom = y_coords.copy()
+  for _ in 0..<4 {
+    x_with_phantom.push(0)
+    y_with_phantom.push(0)
+  }
   let (dx, dy) = apply_gvar_deltas(
     font.data,
     gvar,
     glyph_id,
     coords,
-    x_coords,
-    y_coords,
+    x_with_phantom,
+    y_with_phantom,
     end_points,
   )
   // Apply deltas
-  let var_x : Array[Int] = []
-  let var_y : Array[Int] = []
+  let var_x : Array[Int32] = []
+  let var_y : Array[Int32] = []
   for i = 0; i < x_coords.length(); i = i + 1 {
     var_x.push(x_coords[i] + dx[i])
     var_y.push(y_coords[i] + dy[i])
@@ -400,12 +408,12 @@ fn glyf_outline_by_id_var_gvar(
 fn gvar_interpolate_metrics(
   font : TTFont,
   gvar : GvarData,
-  glyph_id : Int,
+  glyph_id : Int32,
   coords : Array[Double],
-  advance : Int,
-  lsb : Int,
-) -> (Int, Int, GlyphBBox) {
-  let default_bbox : GlyphBBox = { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+  advance : Int32,
+  lsb : Int32,
+) -> (Int32, Int32, GlyphBBox) {
+  let default_bbox : GlyphBBox = { x_min: 0, y_min: 0, x_max: 0, y_max: 0, }
   if glyph_id >= font.loca.length() - 1 {
     return (advance, lsb, default_bbox)
   }
@@ -413,9 +421,9 @@ fn gvar_interpolate_metrics(
   let next_off = font.loca[glyph_id + 1]
   if glyf_off == next_off {
     // Empty glyph — still apply phantom point deltas
-    let x_coords : Array[Int] = [0, advance, lsb, 0]
-    let y_coords : Array[Int] = [0, 0, 0, 0]
-    let end_points : Array[Int] = []
+    let x_coords : Array[Int32] = [0, advance, lsb, 0]
+    let y_coords : Array[Int32] = [0, 0, 0, 0]
+    let end_points : Array[Int32] = []
     let (dx, _dy) = apply_gvar_deltas(
       font.data,
       gvar,
@@ -438,7 +446,7 @@ fn gvar_interpolate_metrics(
   let y_max = reader.read_int16()
   if num_contours < 0 {
     // Compound glyph — return static metrics with table bbox
-    return (advance, lsb, { x_min, y_min, x_max, y_max })
+    return (advance, lsb, { x_min, y_min, x_max, y_max, })
   }
   let (x_coords, y_coords, flags, end_points) = parse_glyph_points(
     reader, num_contours,
@@ -475,8 +483,8 @@ fn gvar_interpolate_metrics(
     lsb
   }
   // Compute variable bbox from interpolated outline
-  let var_x : Array[Int] = []
-  let var_y : Array[Int] = []
+  let var_x : Array[Int32] = []
+  let var_y : Array[Int32] = []
   for i = 0; i < num_real; i = i + 1 {
     var_x.push(x_coords[i] + dx[i])
     var_y.push(y_coords[i] + dy[i])
@@ -488,7 +496,10 @@ fn gvar_interpolate_metrics(
 }
 
 ///|
-fn glyf_outline_by_id(font : TTFont, glyph_id : Int) -> Array[@svg.PathCommand] {
+fn glyf_outline_by_id(
+  font : TTFont,
+  glyph_id : Int32,
+) -> Array[@svg.PathCommand] {
   let glyf_offset = font.loca[glyph_id]
   let next_offset = font.loca[glyph_id + 1]
   if glyf_offset == next_offset {

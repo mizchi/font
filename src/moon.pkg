@@ -3,6 +3,9 @@ import {
   "mizchi/zlib",
   "mizchi/brotli",
   "moonbitlang/core/debug",
+  "Milky2018/moon_swash" @swash,
+  "Milky2018/moon_swash/shape" @swash_shape,
+  "moonbit-community/unicode-bidi" @bidi,
 }
 
 import {

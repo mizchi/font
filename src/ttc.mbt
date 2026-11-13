@@ -11,7 +11,7 @@ pub fn parse_font_collection(data : Bytes) -> Array[TTFont]? {
   }
   let _version = reader.read_uint32()
   let num_fonts = reader.read_uint32()
-  let offsets : Array[Int] = []
+  let offsets : Array[Int32] = []
   for i = 0; i < num_fonts; i = i + 1 {
     offsets.push(reader.read_uint32())
     ignore(i)
@@ -32,7 +32,7 @@ pub fn parse_font_collection(data : Bytes) -> Array[TTFont]? {
 
 ///|
 /// Parse a single font from a TTC/OTC collection by index
-pub fn parse_font_at(data : Bytes, index : Int) -> TTFont? {
+pub fn parse_font_at(data : Bytes, index : Int32) -> TTFont? {
   if data.length() < 12 {
     return None
   }

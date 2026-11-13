@@ -26,3 +26,32 @@ jobs:
         run: moon check --deny-warn
       - name: Moon test
         run: moon test
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install browser dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Build and check browser bindings
+        run: |
+          pnpm run build:browser
+          pnpm run check:browser
+      - name: Headless font metrics tests
+        run: pnpm run test:browser
+      - name: Collect browser font measurements
+        run: |
+          pnpm run measure:browser
+          pnpm run measure:browser --font fixtures/shaping.ttf --text 'fi AV' --text 'A אבג 123' --text 'ببب' --output _build/measurements/shaping.json
+          pnpm run check:fit --max-width 120 --height 48 --weight 700 --output _build/measurements/fit.json
+          pnpm run measure:browser --font fixtures/shaping-reference/robotoserif-variable.ttf --text 'Hello world office AV' --axis wdth=75 --axis opsz=8 --output _build/measurements/axes.json
+      - name: Upload font measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-measurements
+          path: |
+            test-results/
+            _build/measurements/

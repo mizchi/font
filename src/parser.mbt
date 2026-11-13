@@ -26,7 +26,7 @@ pub fn parse_font(data : Bytes) -> TTFont? {
 
 ///|
 /// Parse a TrueType/OpenType font from raw bytes starting at a given offset
-fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
+fn parse_ttf_at_offset(data : Bytes, base_offset : Int32) -> TTFont? {
   let reader = BinaryReader::at(data, base_offset)
   let _sfnt_version = reader.read_uint32()
   let num_tables = reader.read_uint16()
@@ -67,7 +67,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     Some(fvar_rec) => parse_fvar(reader, fvar_rec.offset)
     None => []
   }
-  let kern_pairs : Map[Int, Int] = match tables.get("kern") {
+  let kern_pairs : Map[Int32, Int32] = match tables.get("kern") {
     Some(kern_rec) => parse_kern(reader, kern_rec.offset)
     None => {}
   }
@@ -76,7 +76,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
     Some(avar_rec) => parse_avar(reader, avar_rec.offset, var_axes.length())
     None => []
   }
-  let name_records : Map[Int, String] = match tables.get("name") {
+  let name_records : Map[Int32, String] = match tables.get("name") {
     Some(name_rec) => parse_name(reader, name_rec.offset)
     None => {}
   }
@@ -93,7 +93,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         num_glyphs,
         num_v_metrics,
       )
-      Some({ v_ascent, v_descent, advance_heights, top_side_bearings })
+      Some({ v_ascent, v_descent, advance_heights, top_side_bearings, })
     }
     _ => None
   }
@@ -133,6 +133,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
       num_h_metrics,
       glyf_offset: glyf_rec.offset,
       data,
+      sfnt_offset: base_offset,
       cmap,
       loca,
       advance_widths,
@@ -162,6 +163,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         num_h_metrics,
         glyf_offset: 0,
         data,
+        sfnt_offset: base_offset,
         cmap,
         loca: [],
         advance_widths,
@@ -192,6 +194,7 @@ fn parse_ttf_at_offset(data : Bytes, base_offset : Int) -> TTFont? {
         num_h_metrics,
         glyf_offset: 0,
         data,
+        sfnt_offset: base_offset,
         cmap,
         loca: [],
         advance_widths,
@@ -221,14 +224,14 @@ pub fn parse_ttf(data : Bytes) -> TTFont? {
 }
 
 ///|
-pub fn TTFont::glyph_index(self : TTFont, codepoint : Int) -> Int {
+pub fn TTFont::glyph_index(self : TTFont, codepoint : Int32) -> Int32 {
   self.cmap.get(codepoint).unwrap_or(0)
 }
 
 ///|
 pub fn TTFont::glyph_outline(
   self : TTFont,
-  glyph_id : Int,
+  glyph_id : Int32,
 ) -> Array[@svg.PathCommand] {
   glyph_outline_by_id(self, glyph_id)
 }
@@ -236,14 +239,14 @@ pub fn TTFont::glyph_outline(
 ///|
 pub fn TTFont::char_outline(
   self : TTFont,
-  codepoint : Int,
+  codepoint : Int32,
 ) -> Array[@svg.PathCommand] {
   let gid = self.glyph_index(codepoint)
   self.glyph_outline(gid)
 }
 
 ///|
-pub fn TTFont::glyph_metrics(self : TTFont, glyph_id : Int) -> GlyphMetrics {
+pub fn TTFont::glyph_metrics(self : TTFont, glyph_id : Int32) -> GlyphMetrics {
   let advance = if glyph_id < self.advance_widths.length() {
     self.advance_widths[glyph_id]
   } else {
@@ -272,23 +275,23 @@ pub fn TTFont::glyph_metrics(self : TTFont, glyph_id : Int) -> GlyphMetrics {
           let y_min = r.read_int16()
           let x_max = r.read_int16()
           let y_max = r.read_int16()
-          { x_min, y_min, x_max, y_max }
+          { x_min, y_min, x_max, y_max, }
         } else {
-          { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+          { x_min: 0, y_min: 0, x_max: 0, y_max: 0, }
         }
       } else {
-        { x_min: 0, y_min: 0, x_max: 0, y_max: 0 }
+        { x_min: 0, y_min: 0, x_max: 0, y_max: 0, }
       }
   }
-  { advance_width: advance, left_side_bearing: lsb, bbox }
+  { advance_width: advance, left_side_bearing: lsb, bbox, }
 }
 
 ///|
-pub fn TTFont::get_glyph(self : TTFont, codepoint : Int) -> Glyph {
+pub fn TTFont::get_glyph(self : TTFont, codepoint : Int32) -> Glyph {
   let gid = self.glyph_index(codepoint)
   let metrics = self.glyph_metrics(gid)
   let outline = self.glyph_outline(gid)
-  { glyph_id: gid, metrics, outline }
+  { glyph_id: gid, metrics, outline, }
 }
 
 ///|
@@ -297,7 +300,7 @@ pub fn TTFont::get_glyph(self : TTFont, codepoint : Int) -> Glyph {
 /// For CFF2 fonts, bbox is computed from the variable outline (advance uses static value).
 pub fn TTFont::glyph_metrics_at(
   self : TTFont,
-  glyph_id : Int,
+  glyph_id : Int32,
   axis_values : Map[String, Double],
 ) -> GlyphMetrics {
   if self.var_axes.is_empty() {
@@ -339,7 +342,7 @@ pub fn TTFont::glyph_metrics_at(
     let scalars = precompute_scalars(ivs, 0, coords)
     let outline = glyph_outline_by_id_var(self, glyph_id, scalars)
     let bbox = compute_path_bbox(outline)
-    return { advance_width: advance, left_side_bearing: lsb, bbox }
+    return { advance_width: advance, left_side_bearing: lsb, bbox, }
   }
   self.glyph_metrics(glyph_id)
 }
@@ -347,7 +350,7 @@ pub fn TTFont::glyph_metrics_at(
 ///|
 pub fn TTFont::glyph_outline_at(
   self : TTFont,
-  glyph_id : Int,
+  glyph_id : Int32,
   axis_values : Map[String, Double],
 ) -> Array[@svg.PathCommand] {
   if self.var_axes.is_empty() {
@@ -381,7 +384,7 @@ pub fn TTFont::glyph_outline_at(
 ///|
 pub fn TTFont::char_outline_at(
   self : TTFont,
-  codepoint : Int,
+  codepoint : Int32,
   axis_values : Map[String, Double],
 ) -> Array[@svg.PathCommand] {
   let gid = self.glyph_index(codepoint)
@@ -391,7 +394,7 @@ pub fn TTFont::char_outline_at(
 ///|
 pub fn TTFont::scaled_outline(
   self : TTFont,
-  codepoint : Int,
+  codepoint : Int32,
   font_size : Double,
 ) -> Array[@svg.PathCommand] {
   let outline = self.char_outline(codepoint)
@@ -401,20 +404,24 @@ pub fn TTFont::scaled_outline(
 
 ///|
 /// Get kerning value for a pair of glyph IDs
-pub fn TTFont::kern_pair(self : TTFont, left_gid : Int, right_gid : Int) -> Int {
+pub fn TTFont::kern_pair(
+  self : TTFont,
+  left_gid : Int32,
+  right_gid : Int32,
+) -> Int32 {
   let key = (left_gid << 16) | right_gid
   self.kern_pairs.get(key).unwrap_or(0)
 }
 
 ///|
 /// Get font name by nameID (1=family, 2=subfamily, 4=full name, 6=postscript name)
-pub fn TTFont::font_name(self : TTFont, name_id : Int) -> String? {
+pub fn TTFont::font_name(self : TTFont, name_id : Int32) -> String? {
   self.name_records.get(name_id)
 }
 
 ///|
 /// Get weight class from OS/2 table (400=Regular, 700=Bold)
-pub fn TTFont::weight_class(self : TTFont) -> Int {
+pub fn TTFont::weight_class(self : TTFont) -> Int32 {
   match self.os2 {
     Some(os2) => os2.us_weight_class
     None => 400
@@ -441,7 +448,7 @@ pub fn TTFont::italic_angle(self : TTFont) -> Double {
 
 ///|
 /// Get x-height from OS/2 table
-pub fn TTFont::x_height(self : TTFont) -> Int {
+pub fn TTFont::x_height(self : TTFont) -> Int32 {
   match self.os2 {
     Some(os2) => os2.sx_height
     None => 0
@@ -450,7 +457,7 @@ pub fn TTFont::x_height(self : TTFont) -> Int {
 
 ///|
 /// Get cap-height from OS/2 table
-pub fn TTFont::cap_height(self : TTFont) -> Int {
+pub fn TTFont::cap_height(self : TTFont) -> Int32 {
   match self.os2 {
     Some(os2) => os2.s_cap_height
     None => 0
@@ -459,7 +466,7 @@ pub fn TTFont::cap_height(self : TTFont) -> Int {
 
 ///|
 /// Get glyph name from post table
-pub fn TTFont::glyph_name(self : TTFont, glyph_id : Int) -> String {
+pub fn TTFont::glyph_name(self : TTFont, glyph_id : Int32) -> String {
   match self.post {
     Some(post) =>
       if glyph_id < post.glyph_names.length() {

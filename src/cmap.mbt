@@ -1,8 +1,8 @@
 ///|
 /// Parse cmap table: returns Map[codepoint -> glyph_id]
 /// Prefers Format 12 (full Unicode) over Format 4 (BMP only)
-pub fn parse_cmap(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
-  let result : Map[Int, Int] = Map([])
+pub fn parse_cmap(reader : BinaryReader, offset : Int32) -> Map[Int32, Int32] {
+  let result : Map[Int32, Int32] = Map([])
   reader.seek(offset)
   let _version = reader.read_uint16()
   let num_tables = reader.read_uint16()
@@ -67,8 +67,8 @@ pub fn parse_cmap(reader : BinaryReader, offset : Int) -> Map[Int, Int] {
 ///|
 fn parse_cmap_format12(
   reader : BinaryReader,
-  subtable_offset : Int,
-  result : Map[Int, Int],
+  subtable_offset : Int32,
+  result : Map[Int32, Int32],
 ) -> Unit {
   // Format 12: format(u16=12) + reserved(u16) + length(u32) + language(u32) + numGroups(u32)
   reader.seek(subtable_offset + 4) // skip format(u16) + reserved(u16)
@@ -92,8 +92,8 @@ fn parse_cmap_format12(
 ///|
 fn parse_cmap_format4(
   reader : BinaryReader,
-  subtable_offset : Int,
-  result : Map[Int, Int],
+  subtable_offset : Int32,
+  result : Map[Int32, Int32],
 ) -> Unit {
   reader.seek(subtable_offset + 2)
   let _length = reader.read_uint16()
@@ -103,24 +103,24 @@ fn parse_cmap_format4(
   let _search_range = reader.read_uint16()
   let _entry_selector = reader.read_uint16()
   let _range_shift = reader.read_uint16()
-  let end_codes = Array::new(capacity=seg_count)
+  let end_codes = Array(capacity=seg_count)
   for i = 0; i < seg_count; i = i + 1 {
     end_codes.push(reader.read_uint16())
     ignore(i)
   }
   let _reserved_pad = reader.read_uint16()
-  let start_codes = Array::new(capacity=seg_count)
+  let start_codes = Array(capacity=seg_count)
   for i = 0; i < seg_count; i = i + 1 {
     start_codes.push(reader.read_uint16())
     ignore(i)
   }
-  let id_deltas = Array::new(capacity=seg_count)
+  let id_deltas = Array(capacity=seg_count)
   for i = 0; i < seg_count; i = i + 1 {
     id_deltas.push(reader.read_int16())
     ignore(i)
   }
   let id_range_offset_base = reader.position()
-  let id_range_offsets = Array::new(capacity=seg_count)
+  let id_range_offsets = Array(capacity=seg_count)
   for i = 0; i < seg_count; i = i + 1 {
     id_range_offsets.push(reader.read_uint16())
     ignore(i)
@@ -158,8 +158,8 @@ fn parse_cmap_format4(
 /// Format 0: 256-byte mapping table (Mac Roman)
 fn parse_cmap_format0(
   reader : BinaryReader,
-  subtable_offset : Int,
-  result : Map[Int, Int],
+  subtable_offset : Int32,
+  result : Map[Int32, Int32],
 ) -> Unit {
   // format(u16=0) + length(u16) + language(u16) + glyphIdArray[256]
   reader.seek(subtable_offset + 6) // skip format + length + language
@@ -175,8 +175,8 @@ fn parse_cmap_format0(
 /// Format 6: trimmed table mapping
 fn parse_cmap_format6(
   reader : BinaryReader,
-  subtable_offset : Int,
-  result : Map[Int, Int],
+  subtable_offset : Int32,
+  result : Map[Int32, Int32],
 ) -> Unit {
   // format(u16=6) + length(u16) + language(u16) + firstCode(u16) + entryCount(u16) + glyphIdArray
   reader.seek(subtable_offset + 6) // skip format + length + language

@@ -2,7 +2,7 @@
 /// Subset a TrueType font to include only the given codepoints.
 /// Returns a new sfnt binary containing only the required glyphs.
 /// Only supports glyf-based TrueType fonts (not CFF/CFF2).
-pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
+pub fn subset_font(data : Bytes, codepoints : Array[Int32]) -> Bytes? {
   // Parse original font
   guard parse_font(data) is Some(font) else { return None }
   // Only glyf-based fonts supported
@@ -14,7 +14,7 @@ pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
   }
   let reader = BinaryReader::new(data)
   // Step 1: Build glyph ID set from codepoints
-  let glyph_set : Map[Int, Bool] = Map([])
+  let glyph_set : Map[Int32, Bool] = Map([])
   glyph_set[0] = true // always include .notdef
   for cp in codepoints {
     let gid = font.glyph_index(cp)
@@ -25,12 +25,12 @@ pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
   // Step 2: Resolve compound glyph dependencies
   scan_compound_refs(font, glyph_set)
   // Step 3: Build sorted list of old glyph IDs
-  let old_gids : Array[Int] = []
+  let old_gids : Array[Int32] = []
   glyph_set.each(fn(gid, _) { old_gids.push(gid) })
   old_gids.sort()
   let new_num_glyphs = old_gids.length()
   // Step 4: Build old->new glyph ID mapping
-  let gid_map : Map[Int, Int] = Map([])
+  let gid_map : Map[Int32, Int32] = Map([])
   for i, old_gid in old_gids {
     gid_map[old_gid] = i
   }
@@ -86,11 +86,11 @@ pub fn subset_font(data : Bytes, codepoints : Array[Int]) -> Bytes? {
 
 ///|
 /// Scan compound glyphs and add referenced component glyph IDs
-fn scan_compound_refs(font : TTFont, glyph_set : Map[Int, Bool]) -> Unit {
+fn scan_compound_refs(font : TTFont, glyph_set : Map[Int32, Bool]) -> Unit {
   let mut changed = true
   while changed {
     changed = false
-    let current_gids : Array[Int] = []
+    let current_gids : Array[Int32] = []
     glyph_set.each(fn(gid, _) { current_gids.push(gid) })
     for gid in current_gids {
       if gid >= font.loca.length() - 1 {
@@ -145,11 +145,11 @@ fn scan_compound_refs(font : TTFont, glyph_set : Map[Int, Bool]) -> Unit {
 /// Build new glyf and loca tables with remapped glyph IDs
 fn build_glyf_loca(
   font : TTFont,
-  old_gids : Array[Int],
-  gid_map : Map[Int, Int],
+  old_gids : Array[Int32],
+  gid_map : Map[Int32, Int32],
 ) -> (Bytes, Bytes) {
   let glyf_parts : Array[Bytes] = []
-  let loca_offsets : Array[Int] = []
+  let loca_offsets : Array[Int32] = []
   let mut current_offset = 0
   for old_gid in old_gids {
     loca_offsets.push(current_offset)
@@ -200,7 +200,10 @@ fn build_glyf_loca(
 
 ///|
 /// Rewrite compound glyph component indices to new glyph IDs
-fn rewrite_compound_glyph(glyph_data : Bytes, gid_map : Map[Int, Int]) -> Bytes {
+fn rewrite_compound_glyph(
+  glyph_data : Bytes,
+  gid_map : Map[Int32, Int32],
+) -> Bytes {
   let out : Array[Byte] = Array::make(glyph_data.length(), b'\x00')
   for i = 0; i < glyph_data.length(); i = i + 1 {
     out[i] = glyph_data[i]
@@ -239,11 +242,11 @@ fn rewrite_compound_glyph(glyph_data : Bytes, gid_map : Map[Int, Int]) -> Bytes 
 /// Build a cmap table with Format 12
 fn build_cmap_format12(
   font : TTFont,
-  codepoints : Array[Int],
-  gid_map : Map[Int, Int],
+  codepoints : Array[Int32],
+  gid_map : Map[Int32, Int32],
 ) -> Bytes {
   // Build sorted (codepoint, new_gid) pairs
-  let pairs : Array[(Int, Int)] = []
+  let pairs : Array[(Int32, Int32)] = []
   for cp in codepoints {
     let old_gid = font.glyph_index(cp)
     if old_gid > 0 {
@@ -255,7 +258,7 @@ fn build_cmap_format12(
   }
   pairs.sort_by(fn(a, b) { a.0.compare(b.0) })
   // Build sequential groups
-  let groups : Array[(Int, Int, Int)] = [] // (startCharCode, endCharCode, startGlyphID)
+  let groups : Array[(Int32, Int32, Int32)] = [] // (startCharCode, endCharCode, startGlyphID)
   for pair in pairs {
     let (cp, gid) = pair
     let can_extend = if groups.length() > 0 {
@@ -305,7 +308,7 @@ fn build_cmap_format12(
 
 ///|
 /// Build hmtx table for subset glyphs
-fn build_hmtx(font : TTFont, old_gids : Array[Int]) -> Bytes {
+fn build_hmtx(font : TTFont, old_gids : Array[Int32]) -> Bytes {
   let num_glyphs = old_gids.length()
   // All entries as longHorMetric (4 bytes each)
   let out : Array[Byte] = Array::make(num_glyphs * 4, b'\x00')
@@ -332,7 +335,7 @@ fn build_hmtx(font : TTFont, old_gids : Array[Int]) -> Bytes {
 fn build_maxp(
   _reader : BinaryReader,
   font : TTFont,
-  new_num_glyphs : Int,
+  new_num_glyphs : Int32,
 ) -> Bytes {
   // Find original maxp table
   guard analyze_tables(font.data) is Some(tables) else {

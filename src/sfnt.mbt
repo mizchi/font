@@ -1,13 +1,13 @@
 ///|
 /// Copy a slice of Bytes
-pub fn bytes_slice(data : Bytes, offset : Int, length : Int) -> Bytes {
+pub fn bytes_slice(data : Bytes, offset : Int32, length : Int32) -> Bytes {
   Bytes::makei(length, fn(i) { data[offset + i] })
 }
 
 ///|
 /// Rebuild an sfnt (TrueType/OpenType) binary from individual table data.
 /// Produces: Offset Table (12 bytes) + Table Records (16 bytes x n) + Table Data (4-byte aligned)
-pub fn rebuild_sfnt(flavor : Int, tables : Array[(String, Bytes)]) -> Bytes {
+pub fn rebuild_sfnt(flavor : Int32, tables : Array[(String, Bytes)]) -> Bytes {
   let num_tables = tables.length()
   let entry_selector = log2_floor(num_tables)
   let search_range = (1 << entry_selector) * 16
@@ -47,7 +47,7 @@ pub fn rebuild_sfnt(flavor : Int, tables : Array[(String, Bytes)]) -> Bytes {
 
 ///|
 /// Calculate table checksum per OpenType spec
-pub fn calc_table_checksum(data : Bytes) -> Int {
+pub fn calc_table_checksum(data : Bytes) -> Int32 {
   let len = pad4(data.length())
   let mut sum = 0
   for i = 0; i < len; i = i + 4 {
@@ -62,7 +62,7 @@ pub fn calc_table_checksum(data : Bytes) -> Int {
 
 ///|
 /// Floor of log2(n), minimum 0
-pub fn log2_floor(n : Int) -> Int {
+pub fn log2_floor(n : Int32) -> Int32 {
   let mut result = 0
   let mut val = n
   while val > 1 {
@@ -74,13 +74,13 @@ pub fn log2_floor(n : Int) -> Int {
 
 ///|
 /// Round up to next multiple of 4
-pub fn pad4(n : Int) -> Int {
+pub fn pad4(n : Int32) -> Int32 {
   (n + 3) & -4
 }
 
 ///|
 /// Write a big-endian uint32 into Array[Byte]
-pub fn write_be32(out : Array[Byte], offset : Int, value : Int) -> Unit {
+pub fn write_be32(out : Array[Byte], offset : Int32, value : Int32) -> Unit {
   out[offset] = ((value >> 24) & 0xFF).to_byte()
   out[offset + 1] = ((value >> 16) & 0xFF).to_byte()
   out[offset + 2] = ((value >> 8) & 0xFF).to_byte()
@@ -89,7 +89,7 @@ pub fn write_be32(out : Array[Byte], offset : Int, value : Int) -> Unit {
 
 ///|
 /// Write a big-endian uint16 into Array[Byte]
-pub fn write_be16(out : Array[Byte], offset : Int, value : Int) -> Unit {
+pub fn write_be16(out : Array[Byte], offset : Int32, value : Int32) -> Unit {
   out[offset] = ((value >> 8) & 0xFF).to_byte()
   out[offset + 1] = (value & 0xFF).to_byte()
 }

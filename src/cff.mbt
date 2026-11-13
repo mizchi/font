@@ -2,10 +2,10 @@
 fn parse_cff_index(reader : BinaryReader) -> CFFIndex {
   let count = reader.read_uint16()
   if count == 0 {
-    return { data_offset: reader.position(), offsets: [0] }
+    return { data_offset: reader.position(), offsets: [0], }
   }
   let off_size = reader.read_uint8()
-  let offsets = Array::new(capacity=count + 1)
+  let offsets = Array(capacity=count + 1)
   for i = 0; i <= count; i = i + 1 {
     let off = read_cff_offset(reader, off_size)
     offsets.push(off - 1)
@@ -14,11 +14,11 @@ fn parse_cff_index(reader : BinaryReader) -> CFFIndex {
   let data_offset = reader.position()
   let data_size = offsets[count]
   reader.skip(data_size)
-  { data_offset, offsets }
+  { data_offset, offsets, }
 }
 
 ///|
-fn read_cff_offset(reader : BinaryReader, off_size : Int) -> Int {
+fn read_cff_offset(reader : BinaryReader, off_size : Int32) -> Int32 {
   match off_size {
     1 => reader.read_uint8()
     2 => reader.read_uint16()
@@ -34,7 +34,7 @@ fn read_cff_offset(reader : BinaryReader, off_size : Int) -> Int {
 }
 
 ///|
-fn CFFIndex::count(self : CFFIndex) -> Int {
+fn CFFIndex::count(self : CFFIndex) -> Int32 {
   if self.offsets.length() <= 1 {
     0
   } else {
@@ -43,7 +43,7 @@ fn CFFIndex::count(self : CFFIndex) -> Int {
 }
 
 ///|
-fn CFFIndex::entry(self : CFFIndex, i : Int) -> (Int, Int) {
+fn CFFIndex::entry(self : CFFIndex, i : Int32) -> (Int32, Int32) {
   let start = self.data_offset + self.offsets[i]
   let len = self.offsets[i + 1] - self.offsets[i]
   (start, len)
@@ -52,16 +52,16 @@ fn CFFIndex::entry(self : CFFIndex, i : Int) -> (Int, Int) {
 ///|
 fn parse_cff_dict(
   data : Bytes,
-  offset : Int,
-  length : Int,
-) -> Map[Int, Array[Int]] {
-  let result : Map[Int, Array[Int]] = Map([])
+  offset : Int32,
+  length : Int32,
+) -> Map[Int32, Array[Int32]] {
+  let result : Map[Int32, Array[Int32]] = Map([])
   let reader = BinaryReader::at(data, offset)
   let end = offset + length
-  let operands : Array[Int] = []
+  let operands : Array[Int32] = []
   while reader.position() < end {
     let b0 = reader.read_uint8()
-    if b0 >= 32 {
+    if b0 >= 32 || b0 == 28 || b0 == 29 || b0 == 30 {
       let val = decode_dict_operand(reader, b0)
       operands.push(val)
     } else if b0 == 12 {
@@ -78,7 +78,7 @@ fn parse_cff_dict(
 }
 
 ///|
-fn decode_dict_operand(reader : BinaryReader, b0 : Int) -> Int {
+fn decode_dict_operand(reader : BinaryReader, b0 : Int32) -> Int32 {
   if b0 >= 32 && b0 <= 246 {
     b0 - 139
   } else if b0 >= 247 && b0 <= 250 {
@@ -124,7 +124,7 @@ fn skip_real_number(reader : BinaryReader) -> Unit {
 }
 
 ///|
-fn parse_cff_table(data : Bytes, cff_offset : Int) -> CFFData? {
+fn parse_cff_table(data : Bytes, cff_offset : Int32) -> CFFData? {
   let reader = BinaryReader::at(data, cff_offset)
   let _major = reader.read_uint8()
   let _minor = reader.read_uint8()
@@ -152,7 +152,7 @@ fn parse_cff_table(data : Bytes, cff_offset : Int) -> CFFData? {
   let charstrings = parse_cff_index(cs_reader)
   let mut default_width_x = 0
   let mut nominal_width_x = 0
-  let mut local_subrs : CFFIndex = { data_offset: 0, offsets: [0] }
+  let mut local_subrs : CFFIndex = { data_offset: 0, offsets: [0], }
   if private_size > 0 {
     let priv_abs_offset = cff_offset + private_offset
     let priv_dict = parse_cff_dict(data, priv_abs_offset, private_size)
@@ -192,10 +192,10 @@ fn parse_cff_table(data : Bytes, cff_offset : Int) -> CFFData? {
 fn parse_cff2_index(reader : BinaryReader) -> CFFIndex {
   let count = reader.read_uint32()
   if count == 0 {
-    return { data_offset: reader.position(), offsets: [0] }
+    return { data_offset: reader.position(), offsets: [0], }
   }
   let off_size = reader.read_uint8()
-  let offsets = Array::new(capacity=count + 1)
+  let offsets = Array(capacity=count + 1)
   for i = 0; i <= count; i = i + 1 {
     let off = read_cff_offset(reader, off_size)
     offsets.push(off - 1)
@@ -204,7 +204,7 @@ fn parse_cff2_index(reader : BinaryReader) -> CFFIndex {
   let data_offset = reader.position()
   let data_size = offsets[count]
   reader.skip(data_size)
-  { data_offset, offsets }
+  { data_offset, offsets, }
 }
 
 ///|
@@ -260,7 +260,7 @@ fn compute_region_scalar(region : VarRegion, coords : Array[Double]) -> Double {
 /// Precompute scalars for all regions referenced by a given vsindex
 fn precompute_scalars(
   ivs : ItemVariationStore,
-  vsindex : Int,
+  vsindex : Int32,
   coords : Array[Double],
 ) -> Array[Double] {
   if vsindex < 0 || vsindex >= ivs.data.length() {
@@ -280,14 +280,17 @@ fn precompute_scalars(
 
 ///|
 /// Parse an ItemVariationStore from CFF2 TopDICT op 24
-fn parse_item_variation_store(data : Bytes, offset : Int) -> ItemVariationStore {
+fn parse_item_variation_store(
+  data : Bytes,
+  offset : Int32,
+) -> ItemVariationStore {
   let reader = BinaryReader::at(data, offset)
   let _length = reader.read_uint16() // total length
   let _format = reader.read_uint16() // must be 1
   let region_list_offset = reader.read_uint32()
   let data_count = reader.read_uint16()
   // Read data offsets
-  let data_offsets : Array[Int] = []
+  let data_offsets : Array[Int32] = []
   for i = 0; i < data_count; i = i + 1 {
     data_offsets.push(reader.read_uint32())
     ignore(i)
@@ -304,7 +307,7 @@ fn parse_item_variation_store(data : Bytes, offset : Int) -> ItemVariationStore 
       let start_coord = rl_reader.read_f2dot14()
       let peak_coord = rl_reader.read_f2dot14()
       let end_coord = rl_reader.read_f2dot14()
-      axes.push({ start_coord, peak_coord, end_coord })
+      axes.push({ start_coord, peak_coord, end_coord, })
     }
     regions.push({ axes, })
   }
@@ -318,13 +321,13 @@ fn parse_item_variation_store(data : Bytes, offset : Int) -> ItemVariationStore 
     let region_index_count = ivd_reader.read_uint16()
     let long_words = (word_delta_count & 0x8000) != 0
     let word_count = word_delta_count & 0x7FFF
-    let region_indices : Array[Int] = []
+    let region_indices : Array[Int32] = []
     for _j = 0; _j < region_index_count; _j = _j + 1 {
       region_indices.push(ivd_reader.read_uint16())
     }
-    let delta_sets : Array[Array[Int]] = []
+    let delta_sets : Array[Array[Int32]] = []
     for _item = 0; _item < item_count; _item = _item + 1 {
-      let deltas : Array[Int] = []
+      let deltas : Array[Int32] = []
       for col = 0; col < region_index_count; col = col + 1 {
         if col < word_count {
           if long_words {
@@ -340,15 +343,15 @@ fn parse_item_variation_store(data : Bytes, offset : Int) -> ItemVariationStore 
       }
       delta_sets.push(deltas)
     }
-    ivd_list.push({ region_indices, delta_sets })
+    ivd_list.push({ region_indices, delta_sets, })
     ignore(i)
   }
-  { regions, data: ivd_list }
+  { regions, data: ivd_list, }
 }
 
 ///|
 /// Parse a CFF2 table
-fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
+fn parse_cff2_table(data : Bytes, cff2_offset : Int32) -> CFFData? {
   let reader = BinaryReader::at(data, cff2_offset)
   let _major = reader.read_uint8() // 2
   let _minor = reader.read_uint8() // 0
@@ -368,7 +371,7 @@ fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
   let cs_reader = BinaryReader::at(data, cff2_offset + charstrings_offset)
   let charstrings = parse_cff2_index(cs_reader)
   // FDArray from TopDICT op 1236
-  let mut local_subrs : CFFIndex = { data_offset: 0, offsets: [0] }
+  let mut local_subrs : CFFIndex = { data_offset: 0, offsets: [0], }
   if top_dict.get(1236) is Some(ops) && ops.length() > 0 {
     let fd_offset = cff2_offset + ops[0]
     let fd_reader = BinaryReader::at(data, fd_offset)
@@ -414,7 +417,7 @@ fn parse_cff2_table(data : Bytes, cff2_offset : Int) -> CFFData? {
 }
 
 ///|
-fn calc_subr_bias(count : Int) -> Int {
+fn calc_subr_bias(count : Int32) -> Int32 {
   if count < 1240 {
     107
   } else if count < 33900 {
@@ -430,12 +433,12 @@ priv struct CSState {
   mut x : Double
   mut y : Double
   mut has_width : Bool
-  mut num_stems : Int
+  mut num_stems : Int32
   mut first_move : Bool
   mut ended : Bool
   is_cff2 : Bool
   storage : FixedArray[Double] // put/get storage (32 slots, CFF spec)
-  mut vsindex : Int
+  mut vsindex : Int32
   mut scalars : Array[Double]?
 }
 
@@ -443,7 +446,7 @@ priv struct CSState {
 fn cff_glyph_outline(
   data : Bytes,
   cff : CFFData,
-  glyph_id : Int,
+  glyph_id : Int32,
 ) -> Array[@svg.PathCommand] {
   if glyph_id < 0 || glyph_id >= cff.charstrings.count() {
     return []
@@ -477,7 +480,7 @@ fn cff_glyph_outline(
 fn cff_glyph_outline_var(
   data : Bytes,
   cff : CFFData,
-  glyph_id : Int,
+  glyph_id : Int32,
   scalars : Array[Double],
 ) -> Array[@svg.PathCommand] {
   if glyph_id < 0 || glyph_id >= cff.charstrings.count() {
@@ -510,13 +513,13 @@ fn cff_glyph_outline_var(
 ///|
 fn interpret_charstring(
   data : Bytes,
-  offset : Int,
-  length : Int,
+  offset : Int32,
+  length : Int32,
   cff : CFFData,
   commands : Array[@svg.PathCommand],
   stack : Array[Double],
   state : CSState,
-  depth : Int,
+  depth : Int32,
 ) -> Unit {
   if depth > 10 {
     return
@@ -555,7 +558,11 @@ fn interpret_charstring(
 }
 
 ///|
-fn check_width(stack : Array[Double], state : CSState, expected : Int) -> Unit {
+fn check_width(
+  stack : Array[Double],
+  state : CSState,
+  expected : Int32,
+) -> Unit {
   if !state.has_width {
     if !state.is_cff2 && stack.length() > expected {
       let _ = stack.remove(0)
@@ -567,13 +574,13 @@ fn check_width(stack : Array[Double], state : CSState, expected : Int) -> Unit {
 ///|
 fn exec_operator(
   data : Bytes,
-  b0 : Int,
+  b0 : Int32,
   reader : BinaryReader,
   cff : CFFData,
   commands : Array[@svg.PathCommand],
   stack : Array[Double],
   state : CSState,
-  depth : Int,
+  depth : Int32,
 ) -> Unit {
   match b0 {
     1 | 3 | 18 | 23 => {
@@ -895,7 +902,7 @@ fn exec_vh_curves(
 
 ///|
 fn exec_operator_12(
-  b1 : Int,
+  b1 : Int32,
   commands : Array[@svg.PathCommand],
   stack : Array[Double],
   state : CSState,

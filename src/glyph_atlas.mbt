@@ -4,17 +4,21 @@
 ///|
 pub struct GlyphAtlas {
   cache : GlyphCache
-  width : Int
-  height : Int
-  pixels : Array[Int]
+  width : Int32
+  height : Int32
+  pixels : Array[Int32]
   mut dirty : Bool
-  mut last_used_generation : Int
+  mut last_used_generation : Int32
 }
 
 ///|
-pub fn GlyphAtlas::new(width : Int, height : Int, page_id : Int) -> GlyphAtlas {
+pub fn GlyphAtlas::new(
+  width : Int32,
+  height : Int32,
+  page_id : Int32,
+) -> GlyphAtlas {
   let total = width * height * 4
-  let pixels : Array[Int] = Array::make(total, 0)
+  let pixels : Array[Int32] = Array::make(total, 0)
   {
     cache: GlyphCache::new(width.to_double(), height.to_double(), page_id),
     width,
@@ -31,7 +35,7 @@ pub fn GlyphAtlas::get_cache(self : GlyphAtlas) -> GlyphCache {
 }
 
 ///|
-pub fn GlyphAtlas::get_pixels(self : GlyphAtlas) -> Array[Int] {
+pub fn GlyphAtlas::get_pixels(self : GlyphAtlas) -> Array[Int32] {
   self.pixels
 }
 
@@ -40,7 +44,7 @@ pub fn GlyphAtlas::get_pixels(self : GlyphAtlas) -> Array[Int] {
 pub fn GlyphAtlas::rasterize_glyph(
   self : GlyphAtlas,
   font : TTFont,
-  codepoint : Int,
+  codepoint : Int32,
   size_px : Double,
 ) -> GlyphCacheEntry? {
   let glyph_id = font.glyph_index(codepoint)

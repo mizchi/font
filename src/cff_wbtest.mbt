@@ -1,4 +1,19 @@
 ///|
+test "cff/DICT shortint and longint operands are not operators" {
+  let data : Bytes = b"\x1c\x12\x34\x11\x1d\x00\x01\x00\x00\x13"
+  let dict = parse_cff_dict(data, 0, data.length())
+  assert_eq(dict.get(17).unwrap()[0], 0x1234)
+  assert_eq(dict.get(19).unwrap()[0], 0x10000)
+}
+
+///|
+test "cff/real operand does not corrupt following DICT entries" {
+  let data : Bytes = b"\x1e\x0a\x1f\x0c\x07\x1c\x12\x34\x11"
+  let dict = parse_cff_dict(data, 0, data.length())
+  assert_eq(dict.get(17).unwrap()[0], 0x1234)
+}
+
+///|
 test "cff/parse_cff_index - empty" {
   let data = Bytes::from_array([b'\x00', b'\x00'])
   let reader = BinaryReader::new(data)
@@ -85,9 +100,9 @@ test "cff/calc_subr_bias" {
 test "cff/charstring_endchar_only" {
   let data = Bytes::from_array([b'\x0E'])
   let cff : CFFData = {
-    charstrings: { data_offset: 0, offsets: [0, 1] },
-    global_subrs: { data_offset: 0, offsets: [0] },
-    local_subrs: { data_offset: 0, offsets: [0] },
+    charstrings: { data_offset: 0, offsets: [0, 1], },
+    global_subrs: { data_offset: 0, offsets: [0], },
+    local_subrs: { data_offset: 0, offsets: [0], },
     default_width_x: 0,
     nominal_width_x: 0,
     is_cff2: false,
@@ -107,9 +122,9 @@ test "cff/charstring_rmoveto_endchar" {
     ], // endchar (14)
   )
   let cff : CFFData = {
-    charstrings: { data_offset: 0, offsets: [0, 5] },
-    global_subrs: { data_offset: 0, offsets: [0] },
-    local_subrs: { data_offset: 0, offsets: [0] },
+    charstrings: { data_offset: 0, offsets: [0, 5], },
+    global_subrs: { data_offset: 0, offsets: [0], },
+    local_subrs: { data_offset: 0, offsets: [0], },
     default_width_x: 0,
     nominal_width_x: 0,
     is_cff2: false,
@@ -133,9 +148,9 @@ test "cff/charstring_simple_rect" {
      b'\x0E', // endchar (14)
   ])
   let cff : CFFData = {
-    charstrings: { data_offset: 0, offsets: [0, 10] },
-    global_subrs: { data_offset: 0, offsets: [0] },
-    local_subrs: { data_offset: 0, offsets: [0] },
+    charstrings: { data_offset: 0, offsets: [0, 10], },
+    global_subrs: { data_offset: 0, offsets: [0], },
+    local_subrs: { data_offset: 0, offsets: [0], },
     default_width_x: 0,
     nominal_width_x: 0,
     is_cff2: false,
@@ -166,9 +181,9 @@ test "cff/charstring_rrcurveto" {
      b'\x0E', // endchar (14)
   ])
   let cff : CFFData = {
-    charstrings: { data_offset: 0, offsets: [0, 11] },
-    global_subrs: { data_offset: 0, offsets: [0] },
-    local_subrs: { data_offset: 0, offsets: [0] },
+    charstrings: { data_offset: 0, offsets: [0, 11], },
+    global_subrs: { data_offset: 0, offsets: [0], },
+    local_subrs: { data_offset: 0, offsets: [0], },
     default_width_x: 0,
     nominal_width_x: 0,
     is_cff2: false,

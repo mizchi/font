@@ -1,5 +1,8 @@
 import {
   "mizchi/font/glyph_provider",
   "mizchi/svg",
-  "moonbitlang/core/debug",
 }
+
+import {
+  "moonbitlang/core/debug",
+} for "wbtest"

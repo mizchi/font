@@ -1,12 +1,12 @@
 ///|
 pub(all) struct GlyphProvider {
-  get_glyph : (Int, Double, Bool) -> (Array[@svg.PathCommand], Double)
-  get_kern : (Int, Int, Double, Bool) -> Double
-  get_glyph_by_weight : ((Int, Double, Double) -> (
+  get_glyph : (Int32, Double, Bool) -> (Array[@svg.PathCommand], Double)
+  get_kern : (Int32, Int32, Double, Bool) -> Double
+  get_glyph_by_weight : ((Int32, Double, Double) -> (
     Array[@svg.PathCommand],
     Double,
   ))?
-  get_kern_by_weight : ((Int, Int, Double, Double) -> Double)?
+  get_kern_by_weight : ((Int32, Int32, Double, Double) -> Double)?
   ascent_ratio : Double
 }
 
@@ -18,7 +18,7 @@ pub fn axis_values_for_weight(font_weight : Double) -> Map[String, Double] {
 ///|
 fn scaled_outline_for_weight(
   font : @font.TTFont,
-  codepoint : Int,
+  codepoint : Int32,
   font_size : Double,
   font_weight : Double,
 ) -> Array[@svg.PathCommand] {
@@ -34,7 +34,7 @@ fn scaled_outline_for_weight(
 fn glyph_for_weight(
   font : @font.TTFont,
   units_per_em : Double,
-  codepoint : Int,
+  codepoint : Int32,
   font_size : Double,
   font_weight : Double,
 ) -> (Array[@svg.PathCommand], Double) {
@@ -58,8 +58,8 @@ fn glyph_for_weight(
 fn kern_for_weight(
   font : @font.TTFont,
   units_per_em : Double,
-  cp1 : Int,
-  cp2 : Int,
+  cp1 : Int32,
+  cp2 : Int32,
   font_size : Double,
 ) -> Double {
   let gid1 = font.glyph_index(cp1)
