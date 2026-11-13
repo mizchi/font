@@ -412,6 +412,11 @@ This separation follows [Parley's text stack](https://github.com/linebender/parl
 
 ## Development
 
+Width, bounds, rasterization, atlas caching, headless Canvas and DOM-fit benchmarks
+are available through `just bench` and `just bench-browser`. See
+[BENCHMARKS.md](BENCHMARKS.md) for comparison commands, measurement scope and
+recorded before/after results.
+
 ```bash
 # Download test fixtures and run tests
 just test

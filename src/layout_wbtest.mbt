@@ -41,6 +41,46 @@ test "layout/measure_empty" {
 }
 
 ///|
+test "layout/streaming width agrees exactly with positioned advances" {
+  guard! parse_font(load_fixture("fixtures/shaping.ttf")) is Some(font)
+  for
+    text in [
+      "", " ", "  AV  ", "AVAV", "office", "A\u{10780}V", "A\u{301}", "A אבג 123",
+      "\u{1f600}\u{200d}\u{1f600}",
+    ] {
+    for size in [0.0, 13.25, 24.0, 1000.0] {
+      let positions = font.layout_text(text, size)
+      let expected = if positions.is_empty() {
+        0.0
+      } else {
+        let last = positions[positions.length() - 1]
+        last.x_offset + last.x_advance
+      }
+      assert_eq(font.measure_text(text, size), expected)
+    }
+  }
+}
+
+///|
+test "layout/streaming width preserves lone UTF-16 surrogate behavior" {
+  guard! parse_font(load_fixture("fixtures/shaping.ttf")) is Some(font)
+  font.cmap[0xD800] = font.glyph_index(' '.to_int())
+  let high = (0xD800).unsafe_to_char()
+  let low = (0xDC00).unsafe_to_char()
+  assert_eq(font.measure_text(String::from_array([high]), 1000.0), 300.0)
+  for
+    text in [
+      String::from_array([high, 'A', low]),
+      String::from_array([high, low, 'A']),
+      String::from_array([low, high]),
+    ] {
+    let positions = font.layout_text(text, 13.25)
+    let last = positions[positions.length() - 1]
+    assert_eq(font.measure_text(text, 13.25), last.x_offset + last.x_advance)
+  }
+}
+
+///|
 test "layout/measure_single" {
   let data = Bytes::from_array(minimal_kern_ttf[:])
   guard! parse_font(data) is Some(font)

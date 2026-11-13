@@ -55,25 +55,34 @@ pub fn GlyphAtlas::rasterize_glyph(
   }
   match rasterize_glyph(font, codepoint, size_px) {
     None => None
-    Some(bitmap) =>
-      match
-        self.cache.allocate(
-          cache_key,
-          bitmap.width.to_double(),
-          bitmap.height.to_double(),
-        ) {
-        None => None
-        Some(entry) => {
-          blit_to_atlas(
-            self.pixels,
-            self.width,
-            bitmap,
-            entry.atlas_x.to_int(),
-            entry.atlas_y.to_int(),
-          )
-          self.dirty = true
-          Some(entry)
-        }
-      }
+    Some(bitmap) => self.insert_bitmap(cache_key, bitmap)
+  }
+}
+
+///|
+/// Allocation may fail on a full page; reuse the same raster on the next page.
+fn GlyphAtlas::insert_bitmap(
+  self : GlyphAtlas,
+  cache_key : Int32,
+  bitmap : GlyphBitmap,
+) -> GlyphCacheEntry? {
+  match
+    self.cache.allocate(
+      cache_key,
+      bitmap.width.to_double(),
+      bitmap.height.to_double(),
+    ) {
+    None => None
+    Some(entry) => {
+      blit_to_atlas(
+        self.pixels,
+        self.width,
+        bitmap,
+        entry.atlas_x.to_int(),
+        entry.atlas_y.to_int(),
+      )
+      self.dirty = true
+      Some(entry)
+    }
   }
 }

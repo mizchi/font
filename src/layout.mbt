@@ -44,10 +44,21 @@ pub fn TTFont::measure_text(
   font_size : Double,
 ) -> Double {
   let scale = font_size / self.units_per_em.to_double()
-  let codepoints = string_to_codepoints(text)
   let mut width = 0.0
   let mut prev_gid = -1
-  for cp in codepoints {
+  // Stream UTF-16 without allocating a codepoint array. Match the basic layout
+  // decoder, including lone surrogates; a scalar iterator would replace them.
+  let mut offset = 0
+  while offset < text.length() {
+    let mut cp = text[offset].to_int()
+    offset += 1
+    if cp >= 0xD800 && cp <= 0xDBFF && offset < text.length() {
+      let low = text[offset].to_int()
+      if low >= 0xDC00 && low <= 0xDFFF {
+        cp = 0x10000 + ((cp - 0xD800) << 10) + low - 0xDC00
+        offset += 1
+      }
+    }
     let gid = self.glyph_index(cp)
     if prev_gid >= 0 {
       let kern = self.kern_pair(prev_gid, gid)

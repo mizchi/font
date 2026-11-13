@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Release-mode width, shaped bounds, outline, rasterization and atlas benchmarks for JS/Wasm GC, plus Chromium bindings/Canvas/DOM-fit benchmarks, JSON reports and compatible-baseline comparisons.
+- Reproducible commands and measured before/after results in `BENCHMARKS.md`.
+
+### Fixed
+
+- Empty glyphs no longer allocate or evict atlas pages. Atlas misses reuse one raster across page-allocation attempts.
+- Layout and shaping reuse each glyph's tight bounds within the current font/variation instance.
+- Basic horizontal width measurement streams UTF-16 without allocating a codepoint array, preserving kerning and lone-surrogate behavior.
+
 ## 0.8.0 — 2026-11-13
 
 ### Added

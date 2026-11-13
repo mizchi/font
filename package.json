@@ -10,7 +10,10 @@
     "test:browser": "playwright test",
     "measure:browser": "node scripts/measure-browser.ts",
     "check:browser": "tsc --noEmit",
-    "check:fit": "node scripts/check-fit.ts"
+    "check:fit": "node scripts/check-fit.ts",
+    "bench": "node scripts/bench.ts",
+    "bench:browser": "node scripts/bench-browser.ts",
+    "test:bench": "node --test tests/benchmark-report.test.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.65.0",

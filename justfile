@@ -74,3 +74,12 @@ check-fit *args: build-browser
 # Regenerate bold, italic, variable and Japanese fit reference fonts
 gen-fit-references:
     uv run scripts/gen_fit_references.py
+
+# Benchmark MoonBit width, bounds, rasterization and cold/warm atlas paths
+bench *args: setup
+    pnpm run test:bench
+    pnpm run bench "$@"
+
+# Benchmark headless bindings, Canvas rendering and actual DOM fit inspection
+bench-browser *args: build-browser
+    pnpm run bench:browser "$@"

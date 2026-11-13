@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "suite": "browser-font",
+  "config": {
+    "target": "chromium",
+    "build": "release",
+    "workload": "2e15186b8310ab1c95aac639f630e3d639be7f6f58e6e261fb89400207f70836",
+    "fixtures": {
+      "shaping-reference/roboto-variable.ttf": "2eb0923b0d9f378486c2663d78e7c0d17324004e7192c96aeb789923ceaab7a2"
+    }
+  },
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "moon": "moon 0.1.20261104 (940aa18 2026-11-04) ~/.moon/bin/moon\nmoonc v0.10.20+65efd5b93 (2026-11-05) ~/.moon/bin/moonc\nmoonrun 0.1.20261104 (940aa18 2026-11-04) ~/.moon/bin/moonrun\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg",
+    "node": "v24.22.2",
+    "browser": "158.0.8127.18"
+  },
+  "source": {
+    "commit": "611d2e3c7808aba77aa351ccee90cfecdd2a7665",
+    "dirty": true,
+    "fingerprint": "3bc17071f4ab3c33aadcce0db269b4fdb6177bd2ece78784c42410523a643054"
+  },
+  "results": [
+    {
+      "name": "width/moonbit-js-binding/short",
+      "mean": 0.1327514648134335,
+      "median": 0.13122558630129788,
+      "min": 0.12512206922110636,
+      "max": 0.14495849609375,
+      "std_dev": 0.005098962950438304,
+      "runs": 12,
+      "batch_size": 65536
+    },
+    {
+      "name": "width/moonbit-js-binding/long",
+      "mean": 4.1035970037531415,
+      "median": 4.077148449141532,
+      "min": 4.0283203125,
+      "max": 4.199218732537702,
+      "std_dev": 0.05317030359572948,
+      "runs": 12,
+      "batch_size": 4096
+    },
+    {
+      "name": "bounds/moonbit-js-json/long",
+      "mean": 1323.4375001241763,
+      "median": 1315.625000745058,
+      "min": 1281.25,
+      "max": 1412.5000014901161,
+      "std_dev": 38.70671245712554,
+      "runs": 12,
+      "batch_size": 16
+    },
+    {
+      "name": "width/canvas/short",
+      "mean": 0.14813741048177084,
+      "median": 0.13885497992305318,
+      "min": 0.1220703125,
+      "max": 0.23040771520754788,
+      "std_dev": 0.027715175090224583,
+      "runs": 12,
+      "batch_size": 65536
+    },
+    {
+      "name": "width/canvas/long",
+      "mean": 0.11838277184021233,
+      "median": 0.11367797924322076,
+      "min": 0.10375976489740424,
+      "max": 0.14953613208490424,
+      "std_dev": 0.014306668740749685,
+      "runs": 12,
+      "batch_size": 65536
+    },
+    {
+      "name": "render/canvas-draw-readback",
+      "mean": 71.90755207557231,
+      "median": 70.11718768626451,
+      "min": 62.10937490686774,
+      "max": 96.87500027939677,
+      "std_dev": 8.436141135845652,
+      "runs": 12,
+      "batch_size": 256
+    },
+    {
+      "name": "fit/existing-wrapped-dom",
+      "mean": 238.80208330228925,
+      "median": 234.375,
+      "min": 214.84375,
+      "max": 347.65625,
+      "std_dev": 33.70157920315131,
+      "runs": 12,
+      "batch_size": 128
+    },
+    {
+      "name": "fit/temporary-dom",
+      "mean": 145.11718756208816,
+      "median": 144.92187462747097,
+      "min": 133.59375018626451,
+      "max": 154.68749962747097,
+      "std_dev": 6.736629829806659,
+      "runs": 12,
+      "batch_size": 128
+    }
+  ],
+  "measuredAt": "2026-11-13T14:44:45.306Z",
+  "unit": "microseconds",
+  "sink": 221.671875,
+  "comparison": [
+    {
+      "name": "width/moonbit-js-binding/short",
+      "baselineMedianUs": 0.22659301703242818,
+      "currentMedianUs": 0.13122558630129788,
+      "speedup": 1.7267441771009795,
+      "changePercent": -42.087541787522106
+    },
+    {
+      "name": "width/moonbit-js-binding/long",
+      "baselineMedianUs": 7.214355471660383,
+      "currentMedianUs": 4.077148449141532,
+      "speedup": 1.7694610735057754,
+      "changePercent": -43.48561745872529
+    },
+    {
+      "name": "bounds/moonbit-js-json/long",
+      "baselineMedianUs": 2593.7499925494194,
+      "currentMedianUs": 1315.625000745058,
+      "speedup": 1.9714964302749949,
+      "changePercent": -49.277108259307646
+    },
+    {
+      "name": "width/canvas/short",
+      "baselineMedianUs": 0.14038085919310106,
+      "currentMedianUs": 0.13885497992305318,
+      "speedup": 1.010989013652182,
+      "changePercent": -1.0869567822981874
+    },
+    {
+      "name": "width/canvas/long",
+      "baselineMedianUs": 0.12283325213502394,
+      "currentMedianUs": 0.11367797924322076,
+      "speedup": 1.0805369074358273,
+      "changePercent": -7.4534156937726355
+    },
+    {
+      "name": "render/canvas-draw-readback",
+      "baselineMedianUs": 67.57812481373549,
+      "currentMedianUs": 70.11718768626451,
+      "speedup": 0.9637882956189012,
+      "changePercent": 3.7572259951388354
+    },
+    {
+      "name": "fit/existing-wrapped-dom",
+      "baselineMedianUs": 236.328125,
+      "currentMedianUs": 234.375,
+      "speedup": 1.0083333333333333,
+      "changePercent": -0.8264462809917328
+    },
+    {
+      "name": "fit/temporary-dom",
+      "baselineMedianUs": 148.4375,
+      "currentMedianUs": 144.92187462747097,
+      "speedup": 1.0242587627407258,
+      "changePercent": -2.3684213035985002
+    }
+  ]
+}

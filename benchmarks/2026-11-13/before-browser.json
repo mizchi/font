@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "suite": "browser-font",
+  "config": {
+    "target": "chromium",
+    "build": "release",
+    "workload": "2e15186b8310ab1c95aac639f630e3d639be7f6f58e6e261fb89400207f70836",
+    "fixtures": {
+      "shaping-reference/roboto-variable.ttf": "2eb0923b0d9f378486c2663d78e7c0d17324004e7192c96aeb789923ceaab7a2"
+    }
+  },
+  "environment": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "moon": "moon 0.1.20261104 (940aa18 2026-11-04) ~/.moon/bin/moon\nmoonc v0.10.20+65efd5b93 (2026-11-05) ~/.moon/bin/moonc\nmoonrun 0.1.20261104 (940aa18 2026-11-04) ~/.moon/bin/moonrun\n\nFeature flags enabled: rr_moon_mod,rr_moon_pkg",
+    "node": "v24.22.2",
+    "browser": "158.0.8127.18"
+  },
+  "source": {
+    "commit": "611d2e3c7808aba77aa351ccee90cfecdd2a7665",
+    "dirty": true,
+    "fingerprint": "2488ea6b3573d5bc8de7201ed830c622698f601cf4c7e9ff2370d2e367150bf2"
+  },
+  "results": [
+    {
+      "name": "width/moonbit-js-binding/short",
+      "mean": 0.22850036611998803,
+      "median": 0.22659301703242818,
+      "min": 0.22277832067629788,
+      "max": 0.23803710973879788,
+      "std_dev": 0.00490995649935982,
+      "runs": 12,
+      "batch_size": 65536
+    },
+    {
+      "name": "width/moonbit-js-binding/long",
+      "mean": 7.1899414057649365,
+      "median": 7.214355471660383,
+      "min": 6.982421880820766,
+      "max": 7.397460925858468,
+      "std_dev": 0.11602032346888583,
+      "runs": 12,
+      "batch_size": 4096
+    },
+    {
+      "name": "bounds/moonbit-js-json/long",
+      "mean": 2595.8333325882754,
+      "median": 2593.7499925494194,
+      "min": 2537.5000089406967,
+      "max": 2674.9999970197678,
+      "std_dev": 37.96013942241726,
+      "runs": 12,
+      "batch_size": 8
+    },
+    {
+      "name": "width/canvas/short",
+      "mean": 0.14750162760416666,
+      "median": 0.14038085919310106,
+      "min": 0.1220703125,
+      "max": 0.20294189562264364,
+      "std_dev": 0.024345088899759913,
+      "runs": 12,
+      "batch_size": 65536
+    },
+    {
+      "name": "width/canvas/long",
+      "mean": 0.1294453939711578,
+      "median": 0.12283325213502394,
+      "min": 0.10986328197759576,
+      "max": 0.19226074255129788,
+      "std_dev": 0.022818848783147983,
+      "runs": 12,
+      "batch_size": 65536
+    },
+    {
+      "name": "render/canvas-draw-readback",
+      "mean": 69.4010416821887,
+      "median": 67.57812481373549,
+      "min": 59.76562527939677,
+      "max": 82.42187509313226,
+      "std_dev": 6.454840937514545,
+      "runs": 12,
+      "batch_size": 256
+    },
+    {
+      "name": "fit/existing-wrapped-dom",
+      "mean": 235.61197915114462,
+      "median": 236.328125,
+      "min": 221.09375055879354,
+      "max": 260.9374998137355,
+      "std_dev": 11.196970276506399,
+      "runs": 12,
+      "batch_size": 128
+    },
+    {
+      "name": "fit/temporary-dom",
+      "mean": 150.91145830228925,
+      "median": 148.4375,
+      "min": 143.75000074505806,
+      "max": 174.99999981373549,
+      "std_dev": 8.136718561363255,
+      "runs": 12,
+      "batch_size": 128
+    }
+  ],
+  "measuredAt": "2026-11-13T14:32:58.409Z",
+  "unit": "microseconds",
+  "sink": 221.671875
+}

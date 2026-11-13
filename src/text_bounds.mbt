@@ -91,32 +91,51 @@ fn TextRect::union(self : TextRect, other : TextRect) -> TextRect {
 }
 
 ///|
-fn positioned_ink_bounds(
-  font : TTFont,
-  gid : Int32,
-  x : Double,
-  y : Double,
-  scale : Double,
-) -> TextRect? {
-  positioned_ink_bounds_at(font, gid, x, y, scale, Map([]))
+priv struct GlyphInkCache {
+  font : TTFont
+  axes : Map[String, Double]
+  bounds : Map[Int32, TextRect?]
 }
 
 ///|
-fn positioned_ink_bounds_at(
+/// Scoped to one font and variation instance, never shared across layout calls.
+fn GlyphInkCache::new(
   font : TTFont,
+  axes : Map[String, Double],
+) -> GlyphInkCache {
+  { font, axes, bounds: Map([]), }
+}
+
+///|
+fn GlyphInkCache::positioned(
+  self : GlyphInkCache,
   gid : Int32,
   x : Double,
   y : Double,
   scale : Double,
-  axes : Map[String, Double],
 ) -> TextRect? {
-  let outline = if axes.is_empty() {
-    font.glyph_outline(gid)
-  } else {
-    font.glyph_outline_at(gid, axes)
+  if !(scale > 0.0) {
+    return None
   }
-  match compute_path_bounds(outline) {
-    Some(bounds) if bounds.width > 0.0 && bounds.height > 0.0 && scale > 0.0 =>
+  let raw = match self.bounds.get(gid) {
+    Some(cached) => cached
+    None => {
+      let outline = if self.axes.is_empty() {
+        self.font.glyph_outline(gid)
+      } else {
+        self.font.glyph_outline_at(gid, self.axes)
+      }
+      let bounds = match compute_path_bounds(outline) {
+        Some(bounds) if bounds.width > 0.0 && bounds.height > 0.0 =>
+          Some(bounds)
+        _ => None
+      }
+      self.bounds[gid] = bounds
+      bounds
+    }
+  }
+  match raw {
+    Some(bounds) =>
       Some({
         x: x + bounds.x * scale,
         y: y - (bounds.y + bounds.height) * scale,
@@ -172,6 +191,7 @@ pub fn TTFont::layout_text_bounds(
   font_size : Double,
 ) -> TextBounds {
   let scale = font_size / self.units_per_em.to_double()
+  let ink_cache = GlyphInkCache::new(self, Map([]))
   let glyphs : Array[PositionedGlyphBounds] = []
   let mut text_start = 0
   let mut advance_width = 0.0
@@ -185,8 +205,7 @@ pub fn TTFont::layout_text_bounds(
       x: pos.x_offset,
       y: pos.y_offset,
       advance_width: pos.x_advance,
-      ink_bounds: positioned_ink_bounds(
-        self,
+      ink_bounds: ink_cache.positioned(
         pos.glyph_id,
         pos.x_offset,
         pos.y_offset,

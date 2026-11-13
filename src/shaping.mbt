@@ -130,6 +130,7 @@ pub fn TTFont::shape_text(
   }
   let context = @swash_shape.ShapeContext::ShapeContext()
   let scale = font_size / self.units_per_em.to_double()
+  let ink_cache = GlyphInkCache::new(self, variations)
   let glyphs : Array[PositionedGlyphBounds] = []
   let runs : Array[ShapedRun] = []
   let mut pen_x = 0.0
@@ -209,9 +210,7 @@ pub fn TTFont::shape_text(
           x,
           y,
           advance_width: glyph.advance() * scale,
-          ink_bounds: positioned_ink_bounds_at(
-            self, gid, x, y, scale, variations,
-          ),
+          ink_bounds: ink_cache.positioned(gid, x, y, scale),
         })
         pen_x += glyph.advance() * scale
       }

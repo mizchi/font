@@ -11,5 +11,5 @@
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "allowImportingTsExtensions": true
   },
-  "include": ["browser/**/*", "tests/browser/**/*", "scripts/browser-server.ts", "scripts/measure-browser.ts", "scripts/check-fit.ts", "playwright.config.ts"]
+  "include": ["browser/**/*", "tests/browser/**/*", "tests/benchmark-report.test.ts", "scripts/browser-server.ts", "scripts/measure-browser.ts", "scripts/check-fit.ts", "scripts/bench*.ts", "playwright.config.ts"]
 }

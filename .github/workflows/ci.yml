@@ -39,6 +39,7 @@ jobs:
         run: |
           pnpm run build:browser
           pnpm run check:browser
+          pnpm run test:bench
       - name: Headless font metrics tests
         run: pnpm run test:browser
       - name: Collect browser font measurements

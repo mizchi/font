@@ -151,9 +151,14 @@ pub fn TextRenderer::ensure_glyph(
       None => ()
     }
   }
-  // Try rasterizing into existing pages
+  // An empty outline needs no atlas allocation or eviction. Rasterize once
+  // for a real miss, then reuse the bitmap while looking for space.
+  guard rasterize_glyph(self.font, codepoint, size_px) is Some(bitmap) else {
+    return None
+  }
+  // Try inserting into existing pages
   for i, page in self.pages {
-    match page.rasterize_glyph(self.font, codepoint, size_px) {
+    match page.insert_bitmap(cache_key, bitmap) {
       Some(entry) => {
         page.last_used_generation = self.generation
         return Some((i, entry))
@@ -171,7 +176,7 @@ pub fn TextRenderer::ensure_glyph(
     )
     self.pages.push(new_page)
     let idx = self.pages.length() - 1
-    match self.pages[idx].rasterize_glyph(self.font, codepoint, size_px) {
+    match self.pages[idx].insert_bitmap(cache_key, bitmap) {
       Some(entry) => {
         self.pages[idx].last_used_generation = self.generation
         return Some((idx, entry))
@@ -194,7 +199,7 @@ pub fn TextRenderer::ensure_glyph(
       evicted.pixels[j] = 0
     }
     evicted.dirty = true
-    match evicted.rasterize_glyph(self.font, codepoint, size_px) {
+    match evicted.insert_bitmap(cache_key, bitmap) {
       Some(entry) => {
         evicted.last_used_generation = self.generation
         Some((oldest_idx, entry))
