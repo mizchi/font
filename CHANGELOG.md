@@ -16,6 +16,7 @@
 - CFF DICT numeric operands, negative/fractional outline bounds and preservation of JS subpixel precision.
 - TTC face offsets during shaping, non-linear `avar` mapping in the pinned shaping adapter, and `gvar` phantom-point delta decoding.
 - Measurement clone isolation, unitless line-height rounding, inline-label geometry and zoomed border snapping.
+- Fractional metric comparisons use geometric precision consistently on Linux and macOS; fit inspection retains the target's actual text-rendering mode.
 
 ### Updated
 

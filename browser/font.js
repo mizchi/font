@@ -87,6 +87,9 @@ export async function loadFont(url) {
     ctx.textAlign = 'left';
     ctx.direction = shaping.direction;
     ctx.fontKerning = options.kerning === false ? 'none' : 'normal';
+    // Compare unhinted design advances across platforms. Linux's default
+    // hinting can round each glyph's advance to whole pixels.
+    ctx.textRendering = 'geometricPrecision';
     const metrics = ctx.measureText(text);
 
     const element = document.createElement('div');
@@ -94,6 +97,7 @@ export async function loadFont(url) {
       position: 'absolute', left: '0', top: '0', margin: '0', padding: '0', border: '0',
       font: `${faceStyle} ${fontWeight} ${fontSize}px "${measuredFamily}"`, lineHeight: `${lineHeight}px`,
       fontOpticalSizing: 'none', fontSynthesis: 'none',
+      textRendering: 'geometricPrecision',
       fontVariationSettings: Object.entries(axisValues).map(([tag, value]) => `"${tag}" ${value}`).join(', ') || 'normal',
       fontKerning: options.kerning === false ? 'none' : 'normal',
       fontVariantLigatures: options.ligatures === false ? 'no-common-ligatures' : 'normal',
@@ -126,6 +130,7 @@ export async function loadFont(url) {
       return {
         text, fontSize, moonbit: bounds, shaping,
         options: {
+          textRendering: 'geometricPrecision',
           direction: options.direction ?? 'auto', language: options.language ?? 'und',
           kerning: options.kerning ?? true, ligatures: options.ligatures ?? true,
           fontWeight,

@@ -161,7 +161,9 @@ export type ShapeResult = { ok: true; result: ShapedText } |
 export interface FontMeasurement {
   text: string;
   fontSize: number;
-  options: Required<Pick<MeasureOptions, 'direction' | 'language' | 'kerning' | 'ligatures' | 'fontWeight'>>;
+  options: Required<Pick<MeasureOptions, 'direction' | 'language' | 'kerning' | 'ligatures' | 'fontWeight'>> & {
+    textRendering: 'geometricPrecision';
+  };
   /** GSUB/GPOS/BiDi layout in visual order, without font fallback. */
   moonbit: TextBounds;
   shaping: ShapedText;

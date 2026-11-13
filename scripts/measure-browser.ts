@@ -34,6 +34,7 @@ for (const entry of values.axis ?? []) {
   axisValues[match[1]] = Number(match[2]);
 }
 const options = {
+  textRendering: 'geometricPrecision',
   axisValues,
   ...(values.stretch === undefined ? {} : { fontStretch: Number(values.stretch) }),
   ...(values.weight === undefined ? {} : { fontWeight: Number(values.weight) }),

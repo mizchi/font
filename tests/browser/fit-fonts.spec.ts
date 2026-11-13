@@ -30,10 +30,11 @@ test('mixed script fallback and synthetic bold remain native and explicitly unve
     document.fonts.add(await new FontFace('FitLatin', 'url(/fixtures/shaping-reference/serif.ttf)').load());
     document.fonts.add(await new FontFace('FitJapanese', 'url(/fixtures/shaping-reference/japanese-variable.ttf)', { weight: '100 900' }).load());
     return checkTextFit('Hello 日本語 👨‍👩‍👧‍👦', { maxWidth: 400, requiredFonts: ['FitLatin', 'FitJapanese'],
-      style: { fontFamily: 'FitLatin, FitJapanese, sans-serif', fontWeight: '700', fontSynthesis: 'weight' } });
+      style: { fontFamily: 'FitLatin, FitJapanese, sans-serif', fontWeight: '700', fontSynthesis: 'weight', textRendering: 'geometricPrecision' } });
   });
   expect(result.layout.status).toBe('fits');
   expect(result.fonts.status).toBe('ready');
+  expect(result.style['text-rendering'].toLowerCase()).toBe('geometricprecision');
   expect(result.fonts.glyphCoverage).toBe('unverified');
   expect(result.fonts.faces.map((face: { family: string }) => face.family)).toEqual(expect.arrayContaining(['FitLatin', 'FitJapanese']));
 });

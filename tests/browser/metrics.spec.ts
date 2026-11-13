@@ -16,6 +16,7 @@ for (const file of ['NotoSansMono-Regular.ttf', 'NotoSansMono-Regular.woff', 'No
   test(`${file}: subpixel advance matches Canvas and DOM`, async ({ page }, info) => {
     const result = await measure(page, 'Hello Ag 123', 13.25, {}, file);
     expect(result.missingCodepoints).toEqual([]);
+    expect(result.options.textRendering).toBe('geometricPrecision');
     expect(Math.abs(result.widthDelta)).toBeLessThan(0.02);
     expect(Math.abs(result.dom.textBounds.width - result.canvas.advanceWidth)).toBeLessThan(0.05);
     expect(result.moonbit.glyphs).toHaveLength(12);

@@ -29,7 +29,7 @@ const typography = [
   'letter-spacing', 'word-spacing', 'line-height', 'white-space', 'word-break',
   'overflow-wrap', 'line-break', 'text-wrap', 'hyphens', 'direction', 'unicode-bidi', 'writing-mode',
   'text-align', 'text-align-last', 'text-justify', 'text-autospace', 'text-spacing-trim',
-  'text-orientation', 'text-transform', 'text-indent', 'tab-size',
+  'text-orientation', 'text-transform', 'text-indent', 'text-rendering', 'tab-size',
 ];
 
 const inlineBox = [
